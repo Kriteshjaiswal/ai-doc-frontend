@@ -573,14 +573,14 @@ export default function Flashcards() {
               onClick={() => setIsFlipped((prev) => !prev)}
             >
               <div
-                className={`relative w-full min-h-[340px] sm:min-h-[400px] rounded-2xl preserve-3d transition-transform duration-500 ${
+                className={`relative w-full h-[380px] sm:h-[440px] rounded-2xl preserve-3d transition-transform duration-500 ${
                   isFlipped ? 'rotate-y-180' : ''
                 }`}
               >
                 {/* FRONT SIDE */}
-                <div className="absolute inset-0 w-full h-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 flex flex-col justify-between backface-hidden shadow-xl hover:shadow-2xl transition-shadow">
+                <div className="absolute inset-0 w-full h-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 flex flex-col justify-between backface-hidden shadow-xl hover:shadow-2xl transition-shadow overflow-hidden">
                   {/* Top Card Header */}
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 shrink-0">
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
                         Question
@@ -617,17 +617,22 @@ export default function Flashcards() {
                   </div>
 
                   {/* Question Content */}
-                  <div className="my-auto py-6 text-center space-y-4">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                      {currentCard.docTitle}
-                    </p>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-relaxed">
-                      {currentCard.question}
-                    </h2>
+                  <div
+                    className="flex-1 min-h-0 my-3 overflow-y-auto pr-2 custom-scrollbar flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="my-auto py-2 text-center space-y-4 w-full">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest shrink-0">
+                        {currentCard.docTitle}
+                      </p>
+                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-relaxed whitespace-pre-line">
+                        {currentCard.question}
+                      </h2>
+                    </div>
                   </div>
 
                   {/* Bottom Card Footer */}
-                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-4">
+                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-4 shrink-0">
                     <p className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
                       <FiZap className="text-blue-500 animate-pulse" />
                       Click anywhere or press <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-[10px]">Space</kbd> to Flip
@@ -639,9 +644,9 @@ export default function Flashcards() {
                 </div>
 
                 {/* BACK SIDE */}
-                <div className="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-b from-white to-blue-50/20 dark:from-slate-900 dark:to-blue-950/20 border border-blue-200/80 dark:border-blue-900/60 p-6 sm:p-8 flex flex-col justify-between backface-hidden rotate-y-180 shadow-xl">
+                <div className="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-b from-white to-blue-50/20 dark:from-slate-900 dark:to-blue-950/20 border border-blue-200/80 dark:border-blue-900/60 p-6 sm:p-8 flex flex-col justify-between backface-hidden rotate-y-180 shadow-xl overflow-hidden">
                   {/* Back Header */}
-                  <div className="flex items-center justify-between border-b border-blue-100 dark:border-slate-800 pb-4">
+                  <div className="flex items-center justify-between border-b border-blue-100 dark:border-slate-800 pb-4 shrink-0">
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
                         Answer
@@ -668,16 +673,21 @@ export default function Flashcards() {
                   </div>
 
                   {/* Answer Content */}
-                  <div className="my-auto py-4">
-                    <p className="text-base sm:text-lg text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
-                      {currentCard.answer}
-                    </p>
+                  <div
+                    className="flex-1 min-h-0 my-3 overflow-y-auto pr-2 custom-scrollbar flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="my-auto py-2 space-y-2 w-full">
+                      <p className="text-base sm:text-lg text-slate-800 dark:text-slate-100 font-medium leading-relaxed whitespace-pre-line">
+                        {currentCard.answer}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Back Buttons Toolbar */}
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800"
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0"
                   >
                     <button
                       onClick={() => handleMarkStatus('mastered')}
