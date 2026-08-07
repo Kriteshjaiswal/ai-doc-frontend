@@ -7,6 +7,7 @@ import UploadDocument from './pages/UploadDocument';
 import Documents from './pages/Documents';
 import Chat from './pages/Chat';
 import ChatHistory from './pages/ChatHistory';
+import Flashcards from './pages/Flashcards';
 import Login from './pages/Login';
 
 function ProtectedRoute({ children }) {
@@ -72,6 +73,7 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/upload" element={<UploadDocument />} />
               <Route path="/documents" element={<Documents />} />
+              <Route path="/flashcards" element={<Flashcards />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/history" element={<ChatHistory />} />
             </Route>

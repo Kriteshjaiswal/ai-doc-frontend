@@ -64,6 +64,15 @@ body {
   transform-style: preserve-3d;
 }
 
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
 /* 3D Depth Card Elevate on Hover */
 .card-3d {
   transform-style: preserve-3d;

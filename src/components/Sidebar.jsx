@@ -6,12 +6,14 @@ import {
   FiMessageSquare,
   FiClock,
   FiZap,
+  FiLayers,
 } from 'react-icons/fi';
 
 const navItems = [
   { to: '/', icon: FiHome, label: 'Dashboard' },
   { to: '/upload', icon: FiUpload, label: 'Upload' },
   { to: '/documents', icon: FiFileText, label: 'Documents' },
+  { to: '/flashcards', icon: FiLayers, label: 'Flashcards' },
   { to: '/chat', icon: FiMessageSquare, label: 'AI Chat' },
   { to: '/history', icon: FiClock, label: 'History' },
 ];
