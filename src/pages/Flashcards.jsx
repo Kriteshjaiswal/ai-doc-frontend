@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getAllDocuments
@@ -63,6 +63,8 @@ export default function Flashcards() {
   // UI Modals & Loading Skeletons
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [genDocId, setGenDocId] = useState('');
+  const [genCount, setGenCount] = useState(5);
   const [showExportModal, setShowExportModal] = useState(false);
   const [aiModalContent, setAiModalContent] = useState(null); // { title, content, type }
 
@@ -70,7 +72,7 @@ export default function Flashcards() {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Initial Fetch Documents & Flashcards
+  // Initial Fetch Documents & Flashcards in parallel
   useEffect(() => {
     fetchDocumentsAndCards();
   }, []);
@@ -78,12 +80,13 @@ export default function Flashcards() {
   const fetchDocumentsAndCards = async () => {
     setLoading(true);
     try {
-      const docRes = await getAllDocuments();
+      const [docRes, cardRes] = await Promise.all([
+        getAllDocuments(),
+        getFlashcards()
+      ]);
       const docList = docRes.data?.data || docRes.data || [];
-      setDocuments(docList);
-
-      const cardRes = await getFlashcards();
       const cardList = cardRes.data?.data || cardRes.data || [];
+      setDocuments(docList);
       setDeck(cardList);
     } catch (err) {
       console.error('Error fetching backend data:', err);
@@ -92,15 +95,17 @@ export default function Flashcards() {
     }
   };
 
-  // Filtered Cards based on selected document, difficulty, search
-  const filteredCards = deck.filter((card) => {
-    const matchesDoc = selectedDocId === 'ALL' || String(card.documentId) === String(selectedDocId);
-    const matchesDiff = selectedDifficulty === 'All' || card.difficulty === selectedDifficulty;
-    const matchesSearch =
-      card.question?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.answer?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDoc && matchesDiff && matchesSearch;
-  });
+  // Filtered Cards based on selected document, difficulty, search (Memoized)
+  const filteredCards = useMemo(() => {
+    return deck.filter((card) => {
+      const matchesDoc = selectedDocId === 'ALL' || String(card.documentId) === String(selectedDocId);
+      const matchesDiff = selectedDifficulty === 'All' || card.difficulty === selectedDifficulty;
+      const matchesSearch =
+        card.question?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        card.answer?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesDoc && matchesDiff && matchesSearch;
+    });
+  }, [deck, selectedDocId, selectedDifficulty, searchQuery]);
 
   const activeDeck = filteredCards;
   const safeIndex = activeDeck.length > 0 ? currentIndex % activeDeck.length : 0;
@@ -108,16 +113,31 @@ export default function Flashcards() {
 
   // Calculated Stats
   const totalCount = deck.length;
-  const masteredCount = deck.filter((c) => c.status === 'mastered').length;
-  const revisionCount = deck.filter((c) => c.status === 'need_revision').length;
+  const masteredCount = useMemo(() => deck.filter((c) => c.status === 'mastered').length, [deck]);
+  const revisionCount = useMemo(() => deck.filter((c) => c.status === 'need_revision').length, [deck]);
   const accuracyPct = Math.round((masteredCount / (masteredCount + revisionCount || 1)) * 100);
   const studyStreakDays = totalCount > 0 ? 5 : 0;
 
-  // Keyboard Shortcuts Listener
+  // Keyboard Shortcuts with Stable Ref
+  const activeDeckRef = useRef(activeDeck);
+  activeDeckRef.current = activeDeck;
+
+  const handleNextCard = useCallback(() => {
+    if (activeDeckRef.current.length === 0) return;
+    setIsFlipped(false);
+    setCurrentIndex((prev) => (prev + 1) % activeDeckRef.current.length);
+  }, []);
+
+  const handlePrevCard = useCallback(() => {
+    if (activeDeckRef.current.length === 0) return;
+    setIsFlipped(false);
+    setCurrentIndex((prev) => (prev - 1 + activeDeckRef.current.length) % activeDeckRef.current.length);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
-      if (activeDeck.length === 0) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if (activeDeckRef.current.length === 0) return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -132,9 +152,9 @@ export default function Flashcards() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeDeck, safeIndex]);
+  }, [handleNextCard, handlePrevCard]);
 
-  // Speech Synthesis Stop on Card Change
+  // Speech Synthesis Stop on Card Change & on Unmount
   useEffect(() => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -142,31 +162,29 @@ export default function Flashcards() {
     }
   }, [currentIndex, isFlipped]);
 
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   // Timed Practice Timer Tick
   useEffect(() => {
-    let interval = null;
-    if (isTimedMode && isTimerRunning && timerSeconds > 0) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (timerSeconds === 0 && isTimedMode) {
-      setIsTimerRunning(false);
-    }
+    if (!isTimedMode || !isTimerRunning) return;
+    const interval = setInterval(() => {
+      setTimerSeconds((prev) => {
+        if (prev <= 1) {
+          setIsTimerRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
-  }, [isTimedMode, isTimerRunning, timerSeconds]);
+  }, [isTimedMode, isTimerRunning]);
 
-  // Card Navigation Handlers
-  const handleNextCard = () => {
-    if (activeDeck.length === 0) return;
-    setIsFlipped(false);
-    setCurrentIndex((prev) => (prev + 1) % activeDeck.length);
-  };
-
-  const handlePrevCard = () => {
-    if (activeDeck.length === 0) return;
-    setIsFlipped(false);
-    setCurrentIndex((prev) => (prev - 1 + activeDeck.length) % activeDeck.length);
-  };
 
   // Mark Status & Sync to Backend
   const handleMarkStatus = async (newStatus) => {
@@ -1041,8 +1059,8 @@ export default function Flashcards() {
                   Select Target Uploaded Document
                 </label>
                 <select
-                  id="gen-doc-select"
-                  defaultValue={selectedDocId !== 'ALL' ? selectedDocId : documents[0]?.id}
+                  value={genDocId || (selectedDocId !== 'ALL' ? selectedDocId : documents[0]?.id || '')}
+                  onChange={(e) => setGenDocId(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   {documents.map((doc) => (
@@ -1058,13 +1076,13 @@ export default function Flashcards() {
                   Card Count to Generate
                 </label>
                 <select
-                  id="gen-count-select"
-                  defaultValue="5"
+                  value={genCount}
+                  onChange={(e) => setGenCount(parseInt(e.target.value, 10))}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
-                  <option value="5">5 Cards (Quick Overview)</option>
-                  <option value="10">10 Cards (Standard Study Deck)</option>
-                  <option value="15">15 Cards (Deep Learning Pack)</option>
+                  <option value={5}>5 Cards (Quick Overview)</option>
+                  <option value={10}>10 Cards (Standard Study Deck)</option>
+                  <option value={15}>15 Cards (Deep Learning Pack)</option>
                 </select>
               </div>
 
@@ -1082,12 +1100,9 @@ export default function Flashcards() {
               </button>
               <button
                 onClick={() => {
-                  const docEl = document.getElementById('gen-doc-select');
-                  const countEl = document.getElementById('gen-count-select');
-                  const docIdToUse = docEl ? docEl.value : documents[0]?.id;
-                  const countToUse = countEl ? parseInt(countEl.value, 10) : 5;
-                  if (docIdToUse) {
-                    handleGenerateFlashcards(docIdToUse, countToUse);
+                  const targetId = genDocId || (selectedDocId !== 'ALL' ? selectedDocId : documents[0]?.id);
+                  if (targetId) {
+                    handleGenerateFlashcards(targetId, genCount);
                   } else {
                     alert('Please select a valid document.');
                   }

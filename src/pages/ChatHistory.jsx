@@ -24,8 +24,27 @@ export default function ChatHistory() {
   }, []);
 
   useEffect(() => {
-    if (selectedDocId) fetchHistory(selectedDocId);
-    else setHistory([]);
+    let isCancelled = false;
+    if (selectedDocId) {
+      setLoading(true);
+      getChatHistory(selectedDocId)
+        .then((res) => {
+          if (isCancelled) return;
+          setHistory(res.data || []);
+        })
+        .catch((err) => {
+          if (isCancelled) return;
+          console.error(err);
+        })
+        .finally(() => {
+          if (!isCancelled) setLoading(false);
+        });
+    } else {
+      setHistory([]);
+    }
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedDocId]);
 
   const fetchDocuments = async () => {
@@ -36,18 +55,6 @@ export default function ChatHistory() {
       console.error(err);
     } finally {
       setDocsLoading(false);
-    }
-  };
-
-  const fetchHistory = async (docId) => {
-    try {
-      setLoading(true);
-      const res = await getChatHistory(docId);
-      setHistory(res.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

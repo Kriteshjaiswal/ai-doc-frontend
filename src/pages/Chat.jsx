@@ -7,12 +7,51 @@ import DeleteModal from '../components/DeleteModal';
 import StatusMessage from '../components/StatusMessage';
 import { ThreeDAiThinkingLoader } from '../components/ThreeDLoader';
 
+function ChatInput({ onSend, loading }) {
+  const [question, setQuestion] = useState('');
+
+  const handleSend = () => {
+    if (!question.trim() || loading) return;
+    onSend(question.trim());
+    setQuestion('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="border-t border-slate-100 dark:border-slate-800/80 p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-900/50">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask a question about this document..."
+          disabled={loading}
+          className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50"
+        />
+        <button
+          onClick={handleSend}
+          disabled={!question.trim() || loading}
+          className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+        >
+          <FiSend className="text-sm" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Chat() {
   const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useState([]);
   const [selectedDocId, setSelectedDocId] = useState(searchParams.get('documentId') || '');
   const [qaPairs, setQaPairs] = useState([]);
-  const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [docsLoading, setDocsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -25,8 +64,29 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    if (selectedDocId) loadHistory(selectedDocId);
-    else setQaPairs([]);
+    let isCancelled = false;
+    if (selectedDocId) {
+      getChatHistory(selectedDocId)
+        .then((res) => {
+          if (isCancelled) return;
+          const history = (res.data || []).reverse().map((item) => ({
+            id: item.id,
+            question: item.question,
+            answer: item.answer,
+            time: item.askedAt,
+          }));
+          setQaPairs(history);
+        })
+        .catch((err) => {
+          if (isCancelled) return;
+          console.error(err);
+        });
+    } else {
+      setQaPairs([]);
+    }
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedDocId]);
 
   useEffect(() => {
@@ -44,26 +104,8 @@ export default function Chat() {
     }
   };
 
-  const loadHistory = async (docId) => {
-    try {
-      const res = await getChatHistory(docId);
-      const history = (res.data || []).reverse().map((item) => ({
-        id: item.id,
-        question: item.question,
-        answer: item.answer,
-        time: item.askedAt,
-      }));
-      setQaPairs(history);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSend = async () => {
-    if (!question.trim() || !selectedDocId || loading) return;
-
-    const currentQuestion = question.trim();
-    setQuestion('');
+  const handleSend = async (currentQuestion) => {
+    if (!currentQuestion || !selectedDocId || loading) return;
     setLoading(true);
 
     try {
@@ -88,13 +130,6 @@ export default function Chat() {
       ]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
     }
   };
 
@@ -253,26 +288,7 @@ export default function Chat() {
             </div>
 
             {/* Input Bar */}
-            <div className="border-t border-slate-100 dark:border-slate-800/80 p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-900/50">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask a question about this document..."
-                  disabled={loading}
-                  className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!question.trim() || loading}
-                  className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-                >
-                  <FiSend className="text-sm" />
-                </button>
-              </div>
-            </div>
+            <ChatInput onSend={handleSend} loading={loading} />
           </>
         )}
       </div>

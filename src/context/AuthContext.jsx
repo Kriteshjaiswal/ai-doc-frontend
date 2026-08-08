@@ -4,25 +4,18 @@ import { loginUser, registerUser } from '../api/authApi';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load persisted auth state on mount
-  useEffect(() => {
-    const savedToken = localStorage.getItem('aidoc_token');
-    const savedUser = localStorage.getItem('aidoc_user');
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('aidoc_token');
-        localStorage.removeItem('aidoc_user');
-      }
+  const [token, setToken] = useState(() => localStorage.getItem('aidoc_token') || null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('aidoc_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      localStorage.removeItem('aidoc_token');
+      localStorage.removeItem('aidoc_user');
+      return null;
     }
-    setLoading(false);
-  }, []);
+  });
+  const [loading, setLoading] = useState(false);
 
   const persistAuth = (tokenValue, userValue) => {
     localStorage.setItem('aidoc_token', tokenValue);

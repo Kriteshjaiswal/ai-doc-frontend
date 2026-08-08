@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiUploadCloud, FiFile, FiX, FiCheckCircle } from 'react-icons/fi';
 import { uploadDocument } from '../api/documentApi';
@@ -11,7 +11,16 @@ export default function UploadDocument() {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState({ type: null, message: null });
   const fileInputRef = useRef(null);
+  const progressIntervalRef = useRef(null);
+  const navTimeoutRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
+    };
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -44,14 +53,18 @@ export default function UploadDocument() {
   const handleUpload = async () => {
     if (!file) return;
 
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
+
     try {
       setUploading(true);
       setProgress(0);
 
-      const progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
-            clearInterval(progressInterval);
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
             return 90;
           }
           return prev + 10;
@@ -59,14 +72,24 @@ export default function UploadDocument() {
       }, 200);
 
       await uploadDocument(file);
-      clearInterval(progressInterval);
+
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       setProgress(100);
 
       setStatus({ type: 'success', message: 'Document uploaded successfully!' });
       setFile(null);
 
-      setTimeout(() => navigate('/documents'), 1200);
+      navTimeoutRef.current = setTimeout(() => {
+        navigate('/documents');
+      }, 1200);
     } catch (err) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       setStatus({ type: 'error', message: err.message });
       setProgress(0);
     } finally {
@@ -75,6 +98,10 @@ export default function UploadDocument() {
   };
 
   const removeFile = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
     setFile(null);
     setProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
