@@ -5,7 +5,10 @@ export const askQuestion = async (documentId, question) => {
 };
 
 export const getChatHistory = async (documentId) => {
-  return api.get(`/chat/history/${documentId}`);
+  if (documentId) {
+    return api.get(`/chat/history/${documentId}`);
+  }
+  return api.get('/chat/history');
 };
 
 export const deleteChat = async (chatId) => {

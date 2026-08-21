@@ -11,6 +11,7 @@ const Chat = lazy(() => import('./pages/Chat'));
 const ChatHistory = lazy(() => import('./pages/ChatHistory'));
 const Flashcards = lazy(() => import('./pages/Flashcards'));
 const Login = lazy(() => import('./pages/Login'));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 
 function PageLoader() {
   return (
@@ -63,12 +64,20 @@ export default function App() {
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public route — login/register */}
+              {/* Public route — login/register & OAuth callback */}
               <Route
                 path="/login"
                 element={
                   <PublicRoute>
                     <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/oauth/callback/:provider"
+                element={
+                  <PublicRoute>
+                    <OAuthCallback />
                   </PublicRoute>
                 }
               />

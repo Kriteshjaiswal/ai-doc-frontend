@@ -31,6 +31,10 @@ export function AuthProvider({ children }) {
     return res;
   }, []);
 
+  const loginWithToken = useCallback((jwtToken, fullName, userEmail) => {
+    persistAuth(jwtToken, { fullName, email: userEmail });
+  }, []);
+
   const register = useCallback(async (fullName, email, password) => {
     const res = await registerUser(fullName, email, password);
     const { token: jwt, fullName: name, email: userEmail } = res.data;
@@ -48,7 +52,7 @@ export function AuthProvider({ children }) {
   const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, isAuthenticated, login, loginWithToken, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

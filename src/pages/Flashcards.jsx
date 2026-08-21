@@ -340,179 +340,47 @@ export default function Flashcards() {
   return (
     <div className="space-y-8 pb-12">
       {/* -------------------------------------------------------------
-         Header & Top Search Bar
+         Header & Top Action Button
       ------------------------------------------------------------- */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              AI Flashcards
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-              Live AI Backend
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Learn faster with AI-generated flashcards from your uploaded documents.
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Flashcards
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {deck.length > 0 ? `${deck.length} cards generated from your library` : '4 cards generated from your library'}
           </p>
         </div>
 
-        {/* Global Filter Search Input */}
-        <div className="relative w-full md:w-72">
-          <input
-            type="text"
-            placeholder="Search flashcards..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-4 pr-9 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 shadow-sm"
-          />
-          <FiFilter className="absolute right-3 top-3 text-slate-400 text-base pointer-events-none" />
-        </div>
-      </div>
-
-      {/* -------------------------------------------------------------
-         Top Actions Toolbar
-      ------------------------------------------------------------- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {/* Generate Flashcards Button */}
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setShowGenerateModal(true)}
             disabled={isGenerating || documents.length === 0}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs sm:text-sm shadow-md shadow-blue-600/20 active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all"
           >
-            <FiZap className="text-base animate-pulse" />
-            <span>Generate Flashcards</span>
-          </button>
-
-          {/* Upload Document Button */}
-          <button
-            onClick={() => navigate('/upload')}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-semibold text-xs sm:text-sm transition-colors"
-          >
-            <FiUpload className="text-base text-slate-500 dark:text-slate-400" />
-            <span>Upload Document</span>
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {/* Dynamic Document Filter Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/70">
-            <FiBookOpen className="text-xs text-blue-600 dark:text-blue-400" />
-            <select
-              value={selectedDocId}
-              onChange={(e) => {
-                setSelectedDocId(e.target.value);
-                setCurrentIndex(0);
-                setIsFlipped(false);
-              }}
-              className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer max-w-[150px] truncate"
-            >
-              <option value="ALL" className="dark:bg-slate-900">All Documents ({documents.length})</option>
-              {documents.map((doc) => (
-                <option key={doc.id} value={doc.id} className="dark:bg-slate-900 dark:text-slate-200">
-                  {doc.fileName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Difficulty Filter Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/70">
-            <FiSliders className="text-xs text-indigo-600 dark:text-indigo-400" />
-            <select
-              value={selectedDifficulty}
-              onChange={(e) => {
-                setSelectedDifficulty(e.target.value);
-                setCurrentIndex(0);
-                setIsFlipped(false);
-              }}
-              className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="All" className="dark:bg-slate-900">Difficulty: All</option>
-              <option value="Easy" className="dark:bg-slate-900">Easy</option>
-              <option value="Medium" className="dark:bg-slate-900">Medium</option>
-              <option value="Hard" className="dark:bg-slate-900">Hard</option>
-            </select>
-          </div>
-
-          {/* Export Flashcards Button */}
-          <button
-            onClick={() => setShowExportModal(true)}
-            disabled={deck.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs transition-colors disabled:opacity-50"
-            title="Export deck to JSON/CSV"
-          >
-            <FiDownload className="text-sm" />
-            <span className="hidden sm:inline">Export</span>
+            <FiZap className="text-sm" />
+            <span>Generate cards</span>
           </button>
         </div>
       </div>
 
       {/* -------------------------------------------------------------
-         Statistics Cards Grid (5 Metric Cards)
+         Statistics Cards Grid (3 Metric Cards)
       ------------------------------------------------------------- */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shrink-0">
-            <FiBookOpen />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Total Cards
-            </p>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white">{totalCount}</p>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
+          <p className="text-3xl font-black text-slate-900 dark:text-white">30</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Due today</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0">
-            <FiCheckCircle />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Mastered
-            </p>
-            <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{masteredCount}</p>
-          </div>
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
+          <p className="text-3xl font-black text-slate-900 dark:text-white">18</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Learning</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
-            <FiRefreshCw />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Need Revision
-            </p>
-            <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400">{revisionCount}</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shrink-0">
-            <FiAward />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Accuracy
-            </p>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white">{accuracyPct}%</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3 col-span-2 sm:col-span-1">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shrink-0">
-            <FiTrendingUp className="animate-bounce" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Study Streak
-            </p>
-            <p className="text-xl font-extrabold text-rose-600 dark:text-rose-400">
-              {studyStreakDays} Days 🔥
-            </p>
-          </div>
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
+          <p className="text-3xl font-black text-slate-900 dark:text-white">16</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Mastered</p>
         </div>
       </div>
 
