@@ -51,11 +51,11 @@ export default function SearchCommand({ isOpen, onClose }) {
     },
     {
       id: 'action-chat',
-      title: 'Open AI Chat',
+      title: 'Ask Document AI',
       icon: FiMessageSquare,
       category: 'Actions',
       run: () => {
-        navigate('/chat');
+        navigate('/documents');
         onClose();
       },
     },
@@ -166,11 +166,10 @@ export default function SearchCommand({ isOpen, onClose }) {
                         onClose();
                       }}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-colors ${
-                        isSelected
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-colors ${isSelected
                           ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1E293B]/60'
-                      }`}
+                        }`}
                     >
                       <FiFileText className={`text-base flex-shrink-0 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
                       <span className="truncate flex-1">{doc.fileName}</span>
@@ -197,11 +196,10 @@ export default function SearchCommand({ isOpen, onClose }) {
                       key={act.id}
                       onClick={act.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-colors ${
-                        isSelected
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-colors ${isSelected
                           ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1E293B]/60'
-                      }`}
+                        }`}
                     >
                       <Icon className={`text-base flex-shrink-0 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
                       <span className="truncate flex-1">{act.title}</span>

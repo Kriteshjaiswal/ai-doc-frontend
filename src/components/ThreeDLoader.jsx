@@ -38,50 +38,61 @@ export function ThreeDCubeLoader({ size = 'md', text = 'Loading...' }) {
 }
 
 /**
- * High-tech 3D AI HUD Thinking Loader for Chat Module
+ * Modern Sleek AI Thinking Loader for Chat Module with Question Analysis
  */
-export function ThreeDAiThinkingLoader({ statusText = 'Analyzing document & synthesizing AI answer...' }) {
+export function ThreeDAiThinkingLoader({
+  currentQuestion = '',
+  docName = '',
+  statusText = 'AI is analyzing & synthesizing response...',
+}) {
   return (
-    <div className="flex gap-4 items-start p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-blue-50/40 to-slate-50/80 dark:from-indigo-950/40 dark:via-slate-900/60 dark:to-slate-900/80 border border-indigo-200/80 dark:border-indigo-800/60 shadow-lg shadow-indigo-500/5 backdrop-blur-md max-w-xl animate-slide-in">
-      {/* 3D Floating Glowing Orb Container */}
-      <div className="relative flex flex-col items-center flex-shrink-0 pt-1">
-        {/* Floating 3D Orb */}
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xl shadow-indigo-500/40 animate-float-3d border border-white/20">
-          <FiCpu className="text-lg animate-pulse" />
+    <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-slate-50/90 to-blue-50/50 dark:from-[#13192B] dark:via-[#0F1424] dark:to-[#0B0F19] border border-indigo-200/80 dark:border-indigo-900/50 shadow-sm backdrop-blur-md max-w-xl space-y-2.5 animate-in fade-in zoom-in-95 duration-200">
+      {/* Top Header Row: Animated Pulse Dots & Status Label */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5">
+          {/* Synchronized Wave Pulse Dots */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce [animation-duration:0.8s] [animation-delay:-0.3s]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 dark:bg-cyan-400 animate-bounce [animation-duration:0.8s] [animation-delay:-0.15s]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce [animation-duration:0.8s]" />
+          </div>
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+            Question Analysis & Synthesis
+          </span>
         </div>
 
-        {/* 3D Floor Shadow */}
-        <div className="w-8 h-2 mt-2 bg-indigo-900/30 dark:bg-indigo-400/20 rounded-full blur-xs animate-shadow-pulse" />
+        {docName ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10.5px] font-semibold border border-indigo-500/20 truncate max-w-[200px]">
+            📄 {docName}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10.5px] font-semibold border border-emerald-500/20">
+            ⚡ General AI Knowledge
+          </span>
+        )}
       </div>
 
-      {/* Details & Wave Animation */}
-      <div className="flex-1 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-500/10 dark:bg-indigo-400/20 text-indigo-600 dark:text-indigo-300 text-[10px] font-extrabold uppercase tracking-wider border border-indigo-500/20">
-              <FiZap className="text-amber-400 animate-spin" />
-              <span>AI Thinking HUD</span>
+      {/* Live Question Analysis Card */}
+      {currentQuestion && (
+        <div className="px-3.5 py-2.5 rounded-xl bg-white/80 dark:bg-black/40 border border-slate-200/70 dark:border-white/[0.08] text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed shadow-2xs">
+          <div className="flex items-start gap-2">
+            <span className="px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] font-bold uppercase tracking-wider flex-shrink-0 mt-0.5">
+              Query
+            </span>
+            <span className="font-semibold text-slate-800 dark:text-slate-100 italic">
+              "{currentQuestion}"
             </span>
           </div>
-
-          {/* 3D Audio-Wave Visualizer Bars */}
-          <div className="flex items-end gap-1 h-7 px-2 py-1 bg-slate-900/10 dark:bg-slate-900/60 rounded-lg border border-slate-200/40 dark:border-slate-800">
-            <div className="w-1 bg-gradient-to-t from-blue-500 to-indigo-500 rounded-full animate-wave-bar-1" />
-            <div className="w-1 bg-gradient-to-t from-indigo-500 to-violet-500 rounded-full animate-wave-bar-2" />
-            <div className="w-1 bg-gradient-to-t from-violet-500 to-purple-500 rounded-full animate-wave-bar-3" />
-            <div className="w-1 bg-gradient-to-t from-purple-500 to-pink-500 rounded-full animate-wave-bar-4" />
-            <div className="w-1 bg-gradient-to-t from-pink-500 to-cyan-500 rounded-full animate-wave-bar-5" />
-          </div>
         </div>
+      )}
 
-        {/* Status Prompt */}
-        <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-relaxed">
-          {statusText}
-        </p>
-
-        {/* Floating particle line */}
-        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 h-full w-1/3 rounded-full animate-translate-x shadow-md shadow-indigo-500/50" />
+      {/* Live Multi-Step Status Bar */}
+      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium pt-0.5">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping flex-shrink-0" />
+          <span className="truncate">
+            Parsing intent • Correlating knowledge • Generating structured answer
+          </span>
         </div>
       </div>
     </div>

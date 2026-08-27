@@ -24,13 +24,13 @@ export default function Layout() {
     <div className="flex h-screen bg-[#F8FAFC] dark:bg-[#0B0F17] text-slate-800 dark:text-slate-100 transition-colors duration-200 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:pl-[72px]">
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8">
+          <div className="max-w-[1600px] w-full mx-auto space-y-6">
             <Outlet />
           </div>
         </main>

@@ -4,15 +4,24 @@
 
 :root {
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1, 'ss01' 1, 'tnum' 1;
   color-scheme: light dark;
 }
 
 body {
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1, 'ss01' 1, 'tnum' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   background-color: #F8FAFC;
   color: #0F172A;
+  letter-spacing: -0.012em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  letter-spacing: -0.028em;
 }
 
 .dark body {
@@ -67,8 +76,33 @@ body {
   -webkit-backface-visibility: hidden;
 }
 
-.rotate-y-180 {
+.rotate-y-180,
+.rotateY-180 {
   transform: rotateY(180deg);
+}
+
+.-rotateY-90 {
+  transform: rotateY(-90deg);
+}
+
+.rotateY-90 {
+  transform: rotateY(90deg);
+}
+
+.rotateX-90 {
+  transform: rotateX(90deg);
+}
+
+.-rotateX-90 {
+  transform: rotateX(-90deg);
+}
+
+.translate-z-4 {
+  transform: translateZ(16px);
+}
+
+.-translate-z-8 {
+  transform: translateZ(-32px);
 }
 
 /* 3D Depth Card Elevate on Hover */
@@ -81,12 +115,11 @@ body {
   transform: translateY(-2px);
 }
 
-/* Modal backdrop animation */
+/* Modal & Slide Animations */
 @keyframes fadeInOverlay {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -97,10 +130,20 @@ body {
     opacity: 0;
     transform: scale(0.96) translateY(-8px);
   }
-
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -110,6 +153,118 @@ body {
 
 .animate-zoom-in-modal {
   animation: zoomInModal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.25s ease-out forwards;
+}
+
+/* -------------------------------------------------------------
+   3D Keyframe Animations (HUD & Spinners)
+------------------------------------------------------------- */
+@keyframes spin3D {
+  from {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}
+
+.animate-spin-3d {
+  animation: spin3D 8s linear infinite;
+}
+
+@keyframes float3D {
+  0%, 100% {
+    transform: translateY(0px) rotateZ(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotateZ(2deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float3D 3s ease-in-out infinite;
+}
+
+@keyframes shadowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(0.75);
+    opacity: 0.2;
+  }
+}
+
+.animate-shadow-pulse {
+  animation: shadowPulse 3s ease-in-out infinite;
+}
+
+@keyframes waveBar {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 22px;
+  }
+}
+
+.animate-wave-bar-1 {
+  animation: waveBar 1.2s ease-in-out infinite 0.1s;
+}
+.animate-wave-bar-2 {
+  animation: waveBar 1.2s ease-in-out infinite 0.25s;
+}
+.animate-wave-bar-3 {
+  animation: waveBar 1.2s ease-in-out infinite 0.4s;
+}
+.animate-wave-bar-4 {
+  animation: waveBar 1.2s ease-in-out infinite 0.55s;
+}
+.animate-wave-bar-5 {
+  animation: waveBar 1.2s ease-in-out infinite 0.7s;
+}
+
+@keyframes translateXAnim {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-translate-x {
+  animation: translateXAnim 1.8s ease-in-out infinite;
+}
+
+@keyframes ring3D {
+  0% {
+    transform: rotateX(60deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(60deg) rotateZ(360deg);
+  }
+}
+
+.animate-ring-3d {
+  animation: ring3D 3s linear infinite;
+}
+
+@keyframes ringRev3D {
+  0% {
+    transform: rotateY(60deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateY(60deg) rotateZ(0deg);
+  }
+}
+
+.animate-ring-reverse-3d {
+  animation: ringRev3D 2.5s linear infinite;
 }
 
 /* Custom scrollbar utility */
@@ -165,4 +320,149 @@ body {
   background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 50%, #818cf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* -------------------------------------------------------------
+   HERO BANNER EXACT SAAS GRADIENT & LIGHT EFFECT SYSTEM
+------------------------------------------------------------- */
+.hero-grid-container {
+  position: relative;
+  background: 
+    radial-gradient(circle at 80% 40%, rgba(224, 231, 255, 0.8) 0%, rgba(240, 244, 255, 0.4) 40%, rgba(255, 255, 255, 0.95) 100%),
+    linear-gradient(135deg, #f8faff 0%, #f1f5fd 50%, #edf2fc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  overflow: hidden;
+}
+
+.dark .hero-grid-container {
+  background: 
+    radial-gradient(circle at 76% 48%, rgba(99, 70, 220, 0.24) 0%, rgba(45, 35, 105, 0.15) 38%, transparent 72%),
+    linear-gradient(135deg, #101323 0%, #13162c 45%, #0f1122 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 1. Base Very Light, Soft & Subtle Grid (Ultra-Clean Thin Boxes) */
+.hero-grid-base {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-size: 34px 34px;
+  background-image:
+    linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+}
+
+.dark .hero-grid-base {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* 2. Soft Illuminated Spotlight Grid */
+.hero-grid-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-size: 34px 34px;
+  background-image:
+    linear-gradient(to right, rgba(99, 102, 241, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.12) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at 76% 48%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 76% 48%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 70%);
+}
+
+.dark .hero-grid-glow {
+  background-image:
+    linear-gradient(to right, rgba(165, 180, 252, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(165, 180, 252, 0.18) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at 76% 48%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 76% 48%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 70%);
+}
+
+/* 3. Ambient Soft Purple/Indigo Radial Light Bloom */
+.hero-light-flare {
+  position: absolute;
+  top: 48%;
+  right: 18%;
+  transform: translate(25%, -50%);
+  width: 480px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.2) 0%, rgba(168, 85, 247, 0.1) 40%, transparent 70%);
+  border-radius: 9999px;
+  filter: blur(52px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .hero-light-flare {
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.28) 0%, rgba(99, 102, 241, 0.16) 40%, transparent 70%);
+  filter: blur(55px);
+}
+
+/* 4. Top Accent Subtle Glow Beam */
+.hero-gradient-beam {
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.35) 50%, transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.dark .hero-gradient-beam {
+  background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.5) 50%, transparent);
+}
+
+/* -------------------------------------------------------------
+   GLASSMORPHISM & HOVER CARD UTILITIES
+------------------------------------------------------------- */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.dark .glass-card {
+  background: rgba(17, 24, 39, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.06);
+  border-color: rgba(203, 213, 225, 0.95);
+}
+
+.dark .glass-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Neural Data Streams Animation */
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 154;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-dash-flow {
+  animation: dashFlow 2.6s linear infinite;
 }

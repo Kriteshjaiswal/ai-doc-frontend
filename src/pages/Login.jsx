@@ -1,437 +1,85 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FiMail, FiLock, FiUser, FiEye, FiEyeOff,
-  FiFileText, FiSearch, FiShield, FiCpu,
-  FiMessageSquare, FiLayers
+  FiMail,
+  FiLock,
+  FiUser,
+  FiEye,
+  FiEyeOff,
+  FiShield,
+  FiCpu,
+  FiTarget,
+  FiZap,
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { getOAuthConfig } from '../api/authApi';
+import AiDocumentPipeline from '../components/auth/AiDocumentPipeline';
+import DocumindLogo from '../components/DocumindLogo';
 
 /* ═══════════════════════════════════════════════════════════════
-   FLOATING ANTIGRAVITY LABEL COMPONENT
+   BRAND HEADER COMPONENT (DocuMind)
    ═══════════════════════════════════════════════════════════════ */
 
-function AntigravityLabel({
-  text,
-  dotPosition = 'right', // 'left' | 'right'
-  delay = 0,
-  floatY = 4.5,
-  floatX = 2.0,
-  floatRotate = 0.7,
-  duration = 5.2,
-  className = '',
-  style = {}
-}) {
+function DocQABranding() {
   return (
-    <div
-      className={`absolute pointer-events-none select-none z-20 ${className}`}
-      style={style}
-    >
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 45,
-          scale: 0.96,
-          filter: 'blur(4px)'
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          filter: 'blur(0px)'
-        }}
-        transition={{
-          duration: 0.9,
-          delay: delay,
-          ease: [0.16, 1, 0.3, 1]
-        }}
-      >
-        <motion.div
-          animate={{
-            y: [-floatY, floatY, -floatY],
-            x: [-floatX, floatX, -floatX],
-            rotate: [-floatRotate, floatRotate, -floatRotate]
-          }}
-          transition={{
-            duration: duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: delay + 0.9
-          }}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0b1329]/80 border border-white/10 backdrop-blur-md shadow-lg shadow-black/40"
-        >
-          {dotPosition === 'left' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,1)] flex-shrink-0" />
-          )}
-          <span className="text-[11px] font-medium text-slate-300 tracking-wide whitespace-nowrap">
-            {text}
-          </span>
-          {dotPosition === 'right' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,1)] flex-shrink-0" />
-          )}
-        </motion.div>
-      </motion.div>
-    </div>
+    <DocumindLogo size="lg" showText={true} showSubtitle={true} />
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SUBTLE 4-POINT SPARKLE ICON
+   FEATURE PILL BADGES
    ═══════════════════════════════════════════════════════════════ */
 
-function SparkleIcon({ className = '', delay = 1.4 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.6 }}
-      animate={{
-        opacity: [0, 0.8, 0.4, 0.9, 0.6],
-        scale: [0.6, 1, 0.9, 1.05, 1],
-        rotate: [0, 15, -10, 15, 0]
-      }}
-      transition={{
-        duration: 4.5,
-        delay: delay,
-        repeat: Infinity,
-        ease: 'easeInOut'
-      }}
-      className={`pointer-events-none select-none text-indigo-300/60 ${className}`}
-    >
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-      </svg>
-    </motion.div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   BRAND HEADER & HERO
-   ═══════════════════════════════════════════════════════════════ */
-
-function BrandHeader() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 flex-shrink-0 border border-white/20">
-        <FiMessageSquare className="text-white text-[18px]" />
-      </div>
-      <div className="leading-tight">
-        <span className="text-[18px] font-bold text-white tracking-tight block">DocQ&A</span>
-        <span className="text-[9.5px] font-semibold text-slate-400 uppercase tracking-[0.2em] block mt-0.5">
-          AI DOCUMENT INTELLIGENCE
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function HeroSection() {
-  return (
-    <div className="w-full">
-      <p className="text-[11px] font-bold text-indigo-400/90 uppercase tracking-[0.22em] mb-3">
-        TRUSTED DOCUMENT INTELLIGENCE
-      </p>
-
-      <h1 className="text-[36px] sm:text-[42px] xl:text-[46px] font-extrabold text-white leading-[1.08] tracking-tight mb-3.5">
-        Your documents,<br />
-        <span className="bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
-          understood by AI.
-        </span>
-      </h1>
-
-      <p className="text-[13.5px] sm:text-[14px] text-slate-400 leading-relaxed max-w-[500px]">
-        Upload documents, ask questions in natural language, and get accurate answers grounded in your source material.
-      </p>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   AI SHOWCASE PREVIEW
-   ═══════════════════════════════════════════════════════════════ */
-
-const SCENES = [
-  {
-    id: 'financial',
-    status: { label: 'ANALYZED', color: 'emerald' },
-    metaLeft: 'CITATIONS P.18 · P.24',
-    metaRight: 'EMBEDDINGS 1,284 CHUNKS',
-    doc: {
-      name: 'Q3-financial-report.pdf',
-      meta: '42 pages · Indexed',
-      icon: FiFileText,
-    },
-    question: 'What drove the margin change this quarter?',
-    answer: 'Gross margin rose 2.4 pts, driven by supply consolidation and lower freight costs.',
-    citations: ['p.18', 'p.24']
-  },
-  {
-    id: 'search',
-    status: { label: 'INDEXED', color: 'emerald' },
-    metaLeft: 'CITATIONS P.31 · P.42',
-    metaRight: 'EMBEDDINGS 2,410 CHUNKS',
-    doc: {
-      name: 'Annual-customer-review.pdf',
-      meta: '67 pages · Indexed',
-      icon: FiSearch,
-    },
-    question: 'Find all references to customer churn.',
-    answer: 'Found 14 primary references across 8 chapters with churn rate declining from 5.1% to 3.8% YoY.',
-    citations: ['p.31', 'p.42']
-  }
-];
-
-function AIShowcase() {
-  const [activeIdx, setActiveIdx] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIdx((prev) => (prev + 1) % SCENES.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const scene = SCENES[activeIdx];
-  const DocIcon = scene.doc.icon;
-
-  return (
-    <div className="relative w-full my-7">
-      {/* ─── ANTIGRAVITY FLOATING LABELS ─── */}
-      <AntigravityLabel
-        text="Fast Vector Search"
-        dotPosition="right"
-        delay={0.1}
-        floatY={4.0}
-        floatX={1.5}
-        floatRotate={0.5}
-        duration={5.0}
-        className="-top-3 left-[16%]"
-      />
-
-      <AntigravityLabel
-        text="Source Attribution"
-        dotPosition="left"
-        delay={0.4}
-        floatY={4.5}
-        floatX={-2.0}
-        floatRotate={-0.6}
-        duration={5.6}
-        className="top-1 -right-3 xl:-right-6"
-      />
-
-      <AntigravityLabel
-        text="Semantic Indexing"
-        dotPosition="right"
-        delay={0.7}
-        floatY={3.5}
-        floatX={2.0}
-        floatRotate={0.6}
-        duration={4.8}
-        className="top-[36%] -left-6 xl:-left-10"
-      />
-
-      <AntigravityLabel
-        text="RAG Architecture"
-        dotPosition="right"
-        delay={1.0}
-        floatY={5.0}
-        floatX={1.8}
-        floatRotate={-0.5}
-        duration={5.4}
-        className="bottom-[14%] -left-5 xl:-left-8"
-      />
-
-      <AntigravityLabel
-        text="Natural Language Processing"
-        dotPosition="left"
-        delay={1.3}
-        floatY={4.2}
-        floatX={-2.0}
-        floatRotate={0.7}
-        duration={5.2}
-        className="bottom-[14%] -right-4 xl:-right-8"
-      />
-
-      <AntigravityLabel
-        text="Knowledge Graph"
-        dotPosition="right"
-        delay={1.6}
-        floatY={3.8}
-        floatX={1.5}
-        floatRotate={-0.4}
-        duration={4.9}
-        className="-bottom-5 left-[14%]"
-      />
-
-      <AntigravityLabel
-        text="Scalable LLMs"
-        dotPosition="left"
-        delay={1.9}
-        floatY={4.2}
-        floatX={-1.5}
-        floatRotate={0.5}
-        duration={5.5}
-        className="-bottom-5 left-[52%]"
-      />
-
-      {/* Showcase Blueprint Box Frame */}
-      <div className="relative w-full rounded-2xl p-3.5 sm:p-4 border border-dashed border-indigo-400/30 bg-[#080d1e]/80 shadow-[inset_0_0_30px_rgba(79,70,229,0.06)]">
-        <div
-          className="w-full bg-[#0a1020]/95 border border-white/[0.1] rounded-xl overflow-hidden shadow-2xl flex flex-col justify-between"
-          style={{ minHeight: '268px' }}
-        >
-          {/* Header Status Bar */}
-          <div className="flex items-center justify-between px-4 sm:px-5 pt-3.5 pb-2.5 text-[9px] font-bold tracking-wider uppercase border-b border-white/[0.04]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-              <span className="text-emerald-400 font-semibold">{scene.status.label}</span>
-            </div>
-
-            <div className="flex items-center gap-3 text-slate-400 font-mono text-[9px]">
-              <span>{scene.metaLeft}</span>
-              <span className="text-slate-600">·</span>
-              <span>{scene.metaRight}</span>
-            </div>
-          </div>
-
-          {/* Animated Scene Content */}
-          <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={scene.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                {/* Document Pill */}
-                <div className="flex items-center gap-3 bg-[#0d162d]/80 border border-white/[0.06] rounded-xl p-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                    <DocIcon className="text-indigo-400 text-sm" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-white truncate">
-                      {scene.doc.name}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      {scene.doc.meta}
-                    </p>
-                  </div>
-                </div>
-
-                {/* User Question */}
-                <div className="flex justify-end">
-                  <div className="bg-[#141d33] border border-white/[0.08] rounded-xl rounded-br-sm px-3.5 py-2 max-w-[85%] shadow-sm">
-                    <p className="text-[12px] text-slate-200 font-medium">
-                      {scene.question}
-                    </p>
-                  </div>
-                </div>
-
-                {/* AI Response Box */}
-                <div className="bg-[#0c1527] border border-indigo-500/20 rounded-xl p-3 shadow-inner">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center">
-                      <FiCpu className="text-white text-[9px]" />
-                    </div>
-                    <span className="text-[9.5px] font-bold text-indigo-400 uppercase tracking-wider">
-                      DOCQ&A
-                    </span>
-                  </div>
-                  <p className="text-[11.5px] text-slate-300 leading-relaxed mb-2">
-                    {scene.answer}
-                  </p>
-                  {scene.citations && (
-                    <div className="flex items-center gap-1.5">
-                      {scene.citations.map((c, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Dots */}
-          <div className="flex items-center justify-center gap-1.5 pb-3">
-            {SCENES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIdx(i)}
-                className="focus:outline-none"
-              >
-                <div
-                  className="h-1 rounded-full transition-all duration-300"
-                  style={{
-                    width: i === activeIdx ? '18px' : '5px',
-                    backgroundColor: i === activeIdx ? '#6366f1' : 'rgba(255,255,255,0.15)',
-                  }}
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   FEATURE CARDS ROW
-   ═══════════════════════════════════════════════════════════════ */
-
-function FeatureRow() {
+function FeatureBadges() {
   const features = [
     {
       icon: FiCpu,
-      title: 'AI-powered understanding',
-      desc: 'Structure, tables, and language parsed on upload.',
-    },
-    {
-      icon: FiSearch,
-      title: 'Context-aware answers',
-      desc: 'Responses grounded in your own source passages.',
+      title: 'AI Powered',
+      desc: 'Intelligent analysis',
     },
     {
       icon: FiShield,
-      title: 'Secure workspace',
-      desc: 'Isolated storage with enterprise-grade controls.',
+      title: 'Secure',
+      desc: 'Enterprise grade security',
+    },
+    {
+      icon: FiTarget,
+      title: 'Accurate',
+      desc: 'Reliable answers',
+    },
+    {
+      icon: FiZap,
+      title: 'Fast',
+      desc: 'Instant insights',
     },
   ];
 
   return (
-    <div className="relative w-full mt-3">
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-        {features.map((f, i) => (
-          <div
-            key={i}
-            className="bg-[#0b1224]/80 border border-white/[0.06] rounded-xl p-3 sm:p-3.5 hover:border-indigo-500/20 hover:bg-[#0e162d]/90 transition-all duration-200 flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/15 flex items-center justify-center mb-2">
-                <f.icon className="text-indigo-400 text-xs" />
-              </div>
-              <h4 className="text-[12px] font-semibold text-white/90 mb-1 leading-tight">
-                {f.title}
-              </h4>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-2">
+      {features.map((f, i) => {
+        const Icon = f.icon;
+        return (
+          <div key={i} className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 text-cyan-400 mt-0.5">
+              <Icon className="text-xs" />
             </div>
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              {f.desc}
-            </p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white tracking-tight leading-none mb-1">
+                {f.title}
+              </p>
+              <p className="text-[11px] text-slate-400 leading-tight">
+                {f.desc}
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
-      <SparkleIcon className="absolute -bottom-2 -right-3" delay={1.8} />
+        );
+      })}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FORM FIELDS & SOCIAL BUTTONS
+   FORM FIELDS & SOCIAL AUTH ICONS
    ═══════════════════════════════════════════════════════════════ */
 
 function FormField({
@@ -449,14 +97,14 @@ function FormField({
   endIconOnClick,
   endIconAriaLabel,
   minLength,
-  error
+  error,
 }) {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1.5">
         <label
           htmlFor={id}
-          className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.12em]"
+          className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.14em]"
         >
           {label}
         </label>
@@ -478,9 +126,9 @@ function FormField({
           minLength={minLength}
           className={`
             w-full h-[48px] ${Icon ? 'pl-10' : 'pl-4'} ${endIcon ? 'pr-11' : 'pr-4'}
-            bg-[#090e1d] border border-white/[0.08] rounded-xl text-[14px] font-medium text-white
+            bg-[#070d1d]/90 border border-white/[0.08] rounded-xl text-[14px] font-medium text-white
             placeholder-slate-500
-            focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40
+            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40
             transition-all duration-200
             ${error ? 'border-rose-500/50 focus:ring-rose-500/30' : ''}
           `}
@@ -491,7 +139,7 @@ function FormField({
             onClick={endIconOnClick}
             tabIndex={-1}
             aria-label={endIconAriaLabel}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1 cursor-pointer"
           >
             {endIcon}
           </button>
@@ -504,20 +152,6 @@ function FormField({
         </p>
       )}
     </div>
-  );
-}
-
-function SocialButton({ icon, label, onClick, disabled }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex-1 flex items-center justify-center gap-2 h-[44px] bg-[#090e1d] border border-white/[0.08] rounded-xl text-[13px] font-medium text-slate-200 hover:bg-white/[0.05] hover:border-white/[0.15] transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
   );
 }
 
@@ -541,7 +175,7 @@ function GitHubIcon() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MAIN AUTHENTICATION PAGE
+   MAIN FULL-SCREEN LOGIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 
 export default function Login() {
@@ -610,7 +244,7 @@ export default function Login() {
       }
 
       if (!googleClientId || googleClientId.trim() === '') {
-        setSocialMsg('Google OAuth is ready. To enable live Google Sign-In, configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+        setSocialMsg('Google OAuth is ready. Configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to activate live login.');
         return;
       }
 
@@ -640,7 +274,7 @@ export default function Login() {
       }
 
       if (!githubClientId || githubClientId.trim() === '') {
-        setSocialMsg('GitHub OAuth is ready. To enable live GitHub Sign-In, configure GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables.');
+        setSocialMsg('GitHub OAuth is ready. Configure GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to activate live login.');
         return;
       }
 
@@ -656,75 +290,93 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen lg:h-screen w-full flex relative overflow-y-auto lg:overflow-hidden auth-grid-bg"
+      className="min-h-screen w-full flex relative overflow-y-auto lg:overflow-hidden select-none bg-[#050816]"
       style={{
         fontFamily: "'Inter', sans-serif",
-        backgroundColor: '#070b16'
       }}
     >
-      {/* Base 60px Grid Pattern Layer */}
-      <div className="auth-grid-mask" />
+      {/* ─── 1. TOP CEILING AURORA LIGHT BEAM ─── */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 via-indigo-500/60 via-purple-500/50 to-transparent z-20 pointer-events-none shadow-[0_0_20px_rgba(99,102,241,0.6)]" />
+      <div className="absolute -top-[140px] left-1/2 -translate-x-1/2 w-[800px] h-[280px] bg-gradient-to-b from-indigo-500/25 via-cyan-500/15 to-transparent rounded-full blur-[90px] z-10 pointer-events-none" />
 
-      {/* Illuminated Ambient Grid Lines Layer */}
-      <div className="auth-grid-accent" />
+      {/* ─── 2. TECHNICAL GRID LAYER WITH RADIAL VIGNETTE ─── */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 opacity-[0.05]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)',
+        }}
+      />
 
-      {/* Glowing Ambient Radial Light Spotlights */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Blue Top-Left Hero Spotlight */}
-        <div className="absolute -top-32 left-[5%] w-[650px] h-[650px] bg-blue-600/[0.14] rounded-full blur-[130px]" />
-        {/* Purple Top-Right Login Card Spotlight */}
-        <div className="absolute -top-24 right-[5%] w-[600px] h-[600px] bg-violet-600/[0.12] rounded-full blur-[130px]" />
-        {/* Indigo Center Showcase Spotlight */}
-        <div className="absolute top-[28%] left-[18%] w-[550px] h-[550px] bg-indigo-600/[0.10] rounded-full blur-[120px]" />
+      {/* ─── 3. FULL-PAGE MESH GRADIENT LIGHT EFFECTS ─── */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Left Neural Pipeline Glow (Cyan-Blue Beam) */}
+        <div className="absolute top-[10%] left-[5%] w-[700px] h-[700px] bg-gradient-to-tr from-cyan-500/[0.12] via-blue-600/[0.10] to-transparent rounded-full blur-[140px]" />
+
+        {/* Right Login Card Aura (Indigo-Violet Beam) */}
+        <div className="absolute top-[15%] right-[2%] w-[600px] h-[600px] bg-gradient-to-bl from-indigo-500/[0.14] via-purple-600/[0.10] to-transparent rounded-full blur-[130px]" />
+
+        {/* Bottom Ambient Glow Floor */}
+        <div className="absolute -bottom-[100px] left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-t from-blue-900/[0.12] via-indigo-950/[0.08] to-transparent rounded-full blur-[120px]" />
       </div>
 
-      {/* Main Symmetric 2-Column Grid Container */}
-      <div className="relative z-10 w-full max-w-[1380px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16 py-8 lg:py-4 h-full flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] xl:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-12 xl:gap-16 items-center w-full my-auto">
+      {/* ─── MAIN 2-COLUMN VIEWPORT CONTAINER ─── */}
+      <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16 py-6 lg:py-6 h-full flex flex-col justify-between my-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] xl:grid-cols-[1.3fr_0.7fr] gap-8 lg:gap-12 xl:gap-16 items-center w-full my-auto">
 
           {/* ═══════════════════════════════════════════════════════
-               LEFT COLUMN: Branding, Hero, Showcase, Feature Cards
+               LEFT COLUMN: Brand, Live Neural Pipeline & Copy
              ═══════════════════════════════════════════════════════ */}
-          <div className="hidden lg:flex flex-col w-full max-w-[620px] mx-auto lg:mx-0">
-            <div className="mb-6">
-              <BrandHeader />
+          <div className="flex flex-col justify-between w-full max-w-[820px] mx-auto lg:mx-0 space-y-4">
+            {/* Top-Left Branding */}
+            <div>
+              <DocQABranding />
             </div>
 
-            <HeroSection />
+            {/* Main AI Neural Intelligence Pipeline Visualization */}
+            <div className="w-full">
+              <AiDocumentPipeline />
+            </div>
 
-            <AIShowcase />
+            {/* Bottom Marketing Copy */}
+            <div className="space-y-3">
+              <h1 className="text-[28px] sm:text-[34px] xl:text-[38px] font-extrabold text-white leading-[1.12] tracking-tight">
+                Turn complex documents <br className="hidden sm:inline" />
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                  into intelligent answers.
+                </span>
+              </h1>
 
-            <FeatureRow />
+              <p className="text-[13px] sm:text-[14px] text-slate-400 leading-relaxed max-w-[540px]">
+                Upload documents, understand their content with AI, and ask questions using natural language.
+              </p>
+
+              {/* 4 Feature Badges Row */}
+              <div className="pt-2">
+                <FeatureBadges />
+              </div>
+            </div>
           </div>
 
           {/* ═══════════════════════════════════════════════════════
-               RIGHT COLUMN: Login Card
+               RIGHT COLUMN: Centered Glassmorphism Login Card
              ═══════════════════════════════════════════════════════ */}
-          <div className="w-full flex flex-col items-center justify-center">
-
-            {/* Mobile-only Brand Header & Hero */}
-            <div className="lg:hidden w-full max-w-[420px] mb-6">
-              <BrandHeader />
-              <div className="mt-4">
-                <h1 className="text-[28px] font-extrabold text-white leading-[1.12] tracking-tight">
-                  Your documents,<br />
-                  <span className="bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
-                    understood by AI.
-                  </span>
-                </h1>
-                <p className="text-[13px] text-slate-400 mt-2 leading-relaxed">
-                  Upload documents, ask questions in natural language, and get accurate answers.
-                </p>
-              </div>
-            </div>
-
-            {/* Login Card */}
+          <div className="w-full flex flex-col items-center justify-center my-auto">
             <div className="w-full max-w-[420px]">
-              <div className="bg-[#0a1022]/90 backdrop-blur-xl border border-white/[0.08] rounded-[24px] shadow-2xl shadow-black/50 p-7 sm:p-8">
-                <h2 className="text-[26px] font-bold text-white tracking-tight leading-tight">
+              {/* Glassmorphism Container with Dynamic Light Border & Ambient Flare */}
+              <div className="relative group bg-[#090f20]/90 backdrop-blur-2xl border border-white/[0.10] rounded-[24px] shadow-[0_0_50px_-10px_rgba(99,102,241,0.22)] p-7 sm:p-8 overflow-hidden">
+                {/* Top Subtle Light Reflection Beam inside Card */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 via-indigo-400/50 to-transparent pointer-events-none" />
+
+                <h2 className="text-[24px] sm:text-[26px] font-bold text-white tracking-tight leading-tight">
                   {isRegister ? 'Create your account' : 'Welcome back'}
                 </h2>
-                <p className="text-[13px] text-slate-400 mt-1.5 leading-relaxed mb-7">
+                <p className="text-[12.5px] sm:text-[13px] text-slate-400 mt-1.5 leading-relaxed mb-6">
                   {isRegister
                     ? 'Start your AI document journey today.'
                     : 'Sign in to continue to your documents and AI workspace.'}
@@ -734,7 +386,7 @@ export default function Login() {
                 <div className="min-h-0">
                   {error && (
                     <div
-                      className="mb-5 px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12px] font-semibold"
+                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12px] font-semibold"
                       role="alert"
                     >
                       {error}
@@ -742,7 +394,7 @@ export default function Login() {
                   )}
                   {socialMsg && (
                     <div
-                      className="mb-5 px-3.5 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[12px] font-semibold leading-relaxed"
+                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[12px] font-semibold leading-relaxed"
                       role="status"
                     >
                       {socialMsg}
@@ -750,7 +402,7 @@ export default function Login() {
                   )}
                   {forgotMsg && (
                     <div
-                      className="mb-5 px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[12px] font-semibold"
+                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[12px] font-semibold"
                       role="status"
                     >
                       {forgotMsg}
@@ -802,7 +454,7 @@ export default function Login() {
                           <button
                             type="button"
                             onClick={handleForgotPassword}
-                            className="text-[11px] text-slate-400 hover:text-indigo-400 transition-colors font-medium"
+                            className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors font-medium cursor-pointer"
                           >
                             Forgot password?
                           </button>
@@ -823,7 +475,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-[48px] mt-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:via-indigo-500 hover:to-violet-500 text-white text-[14px] font-semibold rounded-xl shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:shadow-indigo-500/35 hover:brightness-110 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full h-[48px] mt-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white text-[14px] font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:shadow-indigo-500/40 hover:brightness-110 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {loading ? (
                       <>
@@ -831,41 +483,48 @@ export default function Login() {
                         <span>{isRegister ? 'Creating account...' : 'Signing in...'}</span>
                       </>
                     ) : (
-                      <span>{isRegister ? 'Create Account' : 'Sign in'}</span>
+                      <span>{isRegister ? 'Create account' : 'Sign in'}</span>
                     )}
                   </button>
                 </form>
 
                 {/* OR Divider */}
-                <div className="flex items-center gap-3 my-6">
-                  <div className="flex-1 h-px bg-white/[0.06]" />
-                  <span className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">
+                <div className="flex items-center gap-3 my-5">
+                  <div className="flex-1 h-px bg-white/[0.08]" />
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">
                     OR
                   </span>
-                  <div className="flex-1 h-px bg-white/[0.06]" />
+                  <div className="flex-1 h-px bg-white/[0.08]" />
                 </div>
 
                 {/* Social Login Buttons */}
                 <div className="flex gap-3">
-                  <SocialButton
-                    icon={<GoogleIcon />}
-                    label="Continue with Google"
+                  <button
+                    type="button"
                     onClick={handleGoogleLogin}
-                  />
-                  <SocialButton
-                    icon={<GitHubIcon />}
-                    label="Continue with GitHub"
+                    className="flex-1 flex items-center justify-center gap-2 h-[44px] bg-[#070d1d]/80 border border-white/[0.08] rounded-xl text-[12.5px] font-semibold text-slate-200 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200 active:scale-[0.99] cursor-pointer"
+                  >
+                    <GoogleIcon />
+                    <span>Continue with Google</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleGitHubLogin}
-                  />
+                    className="flex-1 flex items-center justify-center gap-2 h-[44px] bg-[#070d1d]/80 border border-white/[0.08] rounded-xl text-[12.5px] font-semibold text-slate-200 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200 active:scale-[0.99] cursor-pointer"
+                  >
+                    <GitHubIcon />
+                    <span>Continue with GitHub</span>
+                  </button>
                 </div>
 
-                {/* Footer Switch */}
-                <div className="mt-6 pt-5 border-t border-white/[0.05] text-center">
-                  <p className="text-[13px] text-slate-400">
+                {/* Switch between Sign In and Create Account */}
+                <div className="mt-6 pt-4 border-t border-white/[0.06] text-center">
+                  <p className="text-[12.5px] text-slate-400">
                     {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
                     <button
                       onClick={toggleMode}
-                      className="text-white font-bold hover:text-indigo-400 transition-colors ml-1 underline underline-offset-2"
+                      className="text-white font-bold hover:text-blue-400 transition-colors ml-1 underline underline-offset-2 cursor-pointer"
                     >
                       {isRegister ? 'Sign in' : 'Create account'}
                     </button>
@@ -874,6 +533,7 @@ export default function Login() {
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

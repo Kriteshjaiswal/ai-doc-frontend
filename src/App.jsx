@@ -7,6 +7,7 @@ import Layout from './components/Layout';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const UploadDocument = lazy(() => import('./pages/UploadDocument'));
 const Documents = lazy(() => import('./pages/Documents'));
+const DocumentOverview = lazy(() => import('./pages/DocumentOverview'));
 const Chat = lazy(() => import('./pages/Chat'));
 const ChatHistory = lazy(() => import('./pages/ChatHistory'));
 const Flashcards = lazy(() => import('./pages/Flashcards'));
@@ -93,8 +94,10 @@ export default function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/upload" element={<UploadDocument />} />
                 <Route path="/documents" element={<Documents />} />
+                <Route path="/documents/:documentId" element={<DocumentOverview />} />
+                <Route path="/documents/:documentId/:tab" element={<DocumentOverview />} />
                 <Route path="/flashcards" element={<Flashcards />} />
-                <Route path="/chat" element={<Chat />} />
+                <Route path="/chat" element={<Navigate to="/documents" replace />} />
                 <Route path="/history" element={<ChatHistory />} />
               </Route>
 

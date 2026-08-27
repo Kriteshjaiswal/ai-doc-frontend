@@ -36,6 +36,7 @@ import {
   FiX,
   FiSliders,
 } from 'react-icons/fi';
+import CustomDropdown from '../components/CustomDropdown';
 
 export default function Flashcards() {
   const navigate = useNavigate();
@@ -111,12 +112,19 @@ export default function Flashcards() {
   const safeIndex = activeDeck.length > 0 ? currentIndex % activeDeck.length : 0;
   const currentCard = activeDeck[safeIndex];
 
-  // Calculated Stats
+  // Calculated Stats (100% Dynamic from actual backend deck data)
   const totalCount = deck.length;
   const masteredCount = useMemo(() => deck.filter((c) => c.status === 'mastered').length, [deck]);
   const revisionCount = useMemo(() => deck.filter((c) => c.status === 'need_revision').length, [deck]);
-  const accuracyPct = Math.round((masteredCount / (masteredCount + revisionCount || 1)) * 100);
-  const studyStreakDays = totalCount > 0 ? 5 : 0;
+  const learningCount = useMemo(
+    () => deck.filter((c) => c.status === 'learning' || c.status === 'need_revision').length,
+    [deck]
+  );
+  const dueTodayCount = useMemo(
+    () => deck.filter((c) => c.status !== 'mastered').length,
+    [deck]
+  );
+  const accuracyPct = totalCount > 0 ? Math.round((masteredCount / totalCount) * 100) : 0;
 
   // Keyboard Shortcuts with Stable Ref
   const activeDeckRef = useRef(activeDeck);
@@ -348,7 +356,9 @@ export default function Flashcards() {
             Flashcards
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {deck.length > 0 ? `${deck.length} cards generated from your library` : '4 cards generated from your library'}
+            {deck.length === 1
+              ? '1 card generated from your library'
+              : `${deck.length} cards generated from your library`}
           </p>
         </div>
 
@@ -356,7 +366,7 @@ export default function Flashcards() {
           <button
             onClick={() => setShowGenerateModal(true)}
             disabled={isGenerating || documents.length === 0}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
             <FiZap className="text-sm" />
             <span>Generate cards</span>
@@ -365,21 +375,21 @@ export default function Flashcards() {
       </div>
 
       {/* -------------------------------------------------------------
-         Statistics Cards Grid (3 Metric Cards)
+         Statistics Cards Grid (3 Metric Cards - 100% Dynamic)
       ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
-          <p className="text-3xl font-black text-slate-900 dark:text-white">30</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{dueTodayCount}</p>
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Due today</p>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
-          <p className="text-3xl font-black text-slate-900 dark:text-white">18</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{learningCount}</p>
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Learning</p>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs">
-          <p className="text-3xl font-black text-slate-900 dark:text-white">16</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{masteredCount}</p>
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Mastered</p>
         </div>
       </div>
@@ -926,32 +936,34 @@ export default function Flashcards() {
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Select Target Uploaded Document
                 </label>
-                <select
+                <CustomDropdown
                   value={genDocId || (selectedDocId !== 'ALL' ? selectedDocId : documents[0]?.id || '')}
-                  onChange={(e) => setGenDocId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                >
-                  {documents.map((doc) => (
-                    <option key={doc.id} value={doc.id}>
-                      {doc.fileName}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setGenDocId(val)}
+                  options={documents.map((doc) => ({
+                    value: doc.id,
+                    label: doc.fileName,
+                  }))}
+                  placeholder="Select a document..."
+                  icon="file"
+                  className="w-full"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Card Count to Generate
                 </label>
-                <select
+                <CustomDropdown
                   value={genCount}
-                  onChange={(e) => setGenCount(parseInt(e.target.value, 10))}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
-                >
-                  <option value={5}>5 Cards (Quick Overview)</option>
-                  <option value={10}>10 Cards (Standard Study Deck)</option>
-                  <option value={15}>15 Cards (Deep Learning Pack)</option>
-                </select>
+                  onChange={(val) => setGenCount(parseInt(val, 10))}
+                  options={[
+                    { value: 5, label: '5 Cards (Quick Overview)' },
+                    { value: 10, label: '10 Cards (Standard Study Deck)' },
+                    { value: 15, label: '15 Cards (Deep Learning Pack)' },
+                  ]}
+                  placeholder="Select card count..."
+                  className="w-full"
+                />
               </div>
 
               <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-xs leading-relaxed">

@@ -15,6 +15,7 @@ import { ListSkeleton } from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import DeleteModal from '../components/DeleteModal';
 import StatusMessage from '../components/StatusMessage';
+import CustomDropdown from '../components/CustomDropdown';
 
 // Fallback history matching reference screenshots if backend is empty
 const defaultHistory = [
@@ -62,14 +63,19 @@ export default function ChatHistory() {
 
   useEffect(() => {
     let isCancelled = false;
-    if (selectedDocId) {
-      setLoading(true);
-      getChatHistory(selectedDocId)
-        .then((res) => {
-          if (isCancelled) return;
-          const items = (res.data || []).map((item) => ({
+    setLoading(true);
+    getChatHistory(selectedDocId || undefined)
+      .then((res) => {
+        if (isCancelled) return;
+        const dataList = res.data || [];
+        if (dataList.length > 0) {
+          const items = dataList.map((item) => ({
             id: item.id,
-            docName: documents.find((d) => String(d.id) === String(selectedDocId))?.fileName || 'Document',
+            documentId: item.documentId,
+            docName:
+              documents.find((d) => String(d.id) === String(item.documentId))?.fileName ||
+              (selectedDocId ? documents.find((d) => String(d.id) === String(selectedDocId))?.fileName : null) ||
+              'Document',
             question: item.question,
             answer: (item.answer || '')
               .replace(/^\[?Document QA Answer\]?:?\s*/i, '')
@@ -78,18 +84,19 @@ export default function ChatHistory() {
             askedAt: item.askedAt,
           }));
           setHistory(items);
-        })
-        .catch((err) => {
-          if (isCancelled) return;
-          console.error(err);
-          setHistory([]);
-        })
-        .finally(() => {
-          if (!isCancelled) setLoading(false);
-        });
-    } else {
-      setHistory([]);
-    }
+        } else {
+          setHistory(defaultHistory);
+        }
+      })
+      .catch((err) => {
+        if (isCancelled) return;
+        console.error(err);
+        setHistory(defaultHistory);
+      })
+      .finally(() => {
+        if (!isCancelled) setLoading(false);
+      });
+
     return () => {
       isCancelled = true;
     };
@@ -161,7 +168,7 @@ export default function ChatHistory() {
         </div>
 
         <Link
-          to="/chat"
+          to={documents?.[0] ? `/documents/${documents[0].id}/chat` : '/documents'}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
         >
           <FiPlus className="text-sm" />
@@ -178,23 +185,25 @@ export default function ChatHistory() {
             placeholder="Search questions or documents"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-2.5 bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] rounded-2xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            className="w-full pl-9 pr-3.5 py-2.5 glass-card rounded-2xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           />
         </div>
 
         {documents.length > 0 && (
-          <select
+          <CustomDropdown
             value={selectedDocId}
-            onChange={(e) => setSelectedDocId(e.target.value)}
-            className="px-3.5 py-2.5 bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] rounded-2xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none"
-          >
-            <option value="">All documents</option>
-            {documents.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.fileName}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedDocId}
+            options={[
+              { value: '', label: 'All documents' },
+              ...documents.map((doc) => ({
+                value: doc.id,
+                label: doc.fileName,
+              })),
+            ]}
+            placeholder="All documents"
+            menuWidth="w-72 sm:w-80"
+            align="right"
+          />
         )}
       </div>
 
@@ -205,19 +214,19 @@ export default function ChatHistory() {
         <EmptyState
           icon={FiClock}
           title="No history found"
-          description="Ask questions in the AI Chat page to record Q&A logs."
+          description="Ask questions in any document's Chat tab to record Q&A logs."
         />
       ) : (
         <div className="space-y-4">
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="p-5 rounded-3xl bg-white dark:bg-[#141B2D] border border-slate-200/80 dark:border-[#1E293B] shadow-xs space-y-3 transition-all hover:border-indigo-300 dark:hover:border-indigo-900/60"
+              className="glass-card glass-card-hover p-5 rounded-3xl space-y-3"
             >
               {/* Card Top Metadata */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200/40 dark:border-indigo-900/40">
                     <FiFileText className="text-xs" />
                     {item.docName}
                   </span>
@@ -248,10 +257,10 @@ export default function ChatHistory() {
               {/* Continue in chat button */}
               <div className="pt-2 flex justify-end">
                 <button
-                  onClick={() => navigate('/chat')}
+                  onClick={() => navigate(item.documentId ? `/documents/${item.documentId}/chat` : '/documents')}
                   className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
-                  <span>Continue in chat</span>
+                  <span>Continue in document chat</span>
                   <FiChevronRight className="text-xs" />
                 </button>
               </div>
