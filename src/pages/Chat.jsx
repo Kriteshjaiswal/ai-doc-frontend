@@ -10,9 +10,10 @@ import {
   FiCompass,
   FiCheck,
   FiCopy,
+  FiBookOpen,
 } from 'react-icons/fi';
 import { askQuestion, getChatHistory, deleteChat, deleteChatsByDocument } from '../api/chatApi';
-import { getAllDocuments } from '../api/documentApi';
+import { getAllDocuments, addDocumentNote } from '../api/documentApi';
 import DeleteModal from '../components/DeleteModal';
 import StatusMessage from '../components/StatusMessage';
 import { ThreeDAiThinkingLoader } from '../components/ThreeDLoader';
@@ -536,6 +537,32 @@ export default function Chat() {
     }
   };
 
+  const [savedNotes, setSavedNotes] = useState({});
+  const [savingNoteId, setSavingNoteId] = useState(null);
+
+  const handleSaveToNote = async (pair) => {
+    if (!selectedDocId || !pair || pair.error) return;
+    try {
+      setSavingNoteId(pair.id);
+      const rawTitle = (pair.question || 'Q&A Note').trim().replace(/^[#\*\s]+/, '');
+      const title = rawTitle.length > 55 ? `${rawTitle.substring(0, 55)}...` : rawTitle;
+      const content = `### ❓ Question\n${pair.question}\n\n### 💡 Answer\n${pair.answer}`;
+      const notePayload = {
+        title,
+        content,
+        page: 1,
+      };
+      await addDocumentNote(Number(selectedDocId), notePayload);
+      setSavedNotes((prev) => ({ ...prev, [pair.id]: true }));
+      setStatus({ type: 'success', message: 'Saved to Document Notes!' });
+    } catch (err) {
+      console.error('Failed to save note:', err);
+      setStatus({ type: 'error', message: 'Failed to save note' });
+    } finally {
+      setSavingNoteId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col overflow-hidden space-y-0 select-none">
       {status.message && (
@@ -659,13 +686,54 @@ export default function Chat() {
                   >
                     <FormattedMarkdownText content={pair.answer} />
 
-                    {/* Source citation tag */}
-                    {pair.source && (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-200/70 dark:bg-[#0D121F] border border-slate-300/80 dark:border-slate-700/70 text-[11px] text-slate-700 dark:text-slate-300 font-medium">
-                        <FiPaperclip className="text-xs text-slate-400" />
-                        <span>{pair.source}</span>
+                    {/* Source citation & Action Bar */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex-wrap gap-2 text-[11px]">
+                      {pair.source ? (
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-200/70 dark:bg-[#0D121F] border border-slate-300/80 dark:border-slate-700/70 text-[10px] text-slate-700 dark:text-slate-300 font-medium">
+                          <FiPaperclip className="text-xs text-slate-400" />
+                          <span>{pair.source}</span>
+                        </div>
+                      ) : <span />}
+
+                      <div className="flex items-center gap-2">
+                        {selectedDocId && (
+                          <button
+                            onClick={() => handleSaveToNote(pair)}
+                            disabled={savedNotes[pair.id] || savingNoteId === pair.id}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                              savedNotes[pair.id]
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-900/40'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50/70 dark:hover:bg-orange-950/40'
+                            }`}
+                            title="Save this to Document Notes"
+                          >
+                            {savedNotes[pair.id] ? (
+                              <>
+                                <FiCheck className="text-emerald-500 text-xs" />
+                                <span>Saved to Notes</span>
+                              </>
+                            ) : (
+                              <>
+                                <FiBookOpen className="text-xs text-orange-500" />
+                                <span>{savingNoteId === pair.id ? 'Saving...' : 'Save to Note'}</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(pair.answer || '');
+                            setStatus({ type: 'success', message: 'Copied to clipboard' });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors cursor-pointer"
+                          title="Copy Answer"
+                        >
+                          <FiCopy className="text-xs" />
+                          <span>Copy</span>
+                        </button>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>

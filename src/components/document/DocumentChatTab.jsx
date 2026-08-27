@@ -122,14 +122,15 @@ export default function DocumentChatTab({
 
   // 1. SAVE TO NOTES ACTION (Stores question + AI answer)
   const handleSaveToNote = async (msg) => {
-    if (!documentId || !msg || savedNotes[msg.id]) return;
+    if (!documentId || !msg) return;
 
-    const msgKey = msg.id;
+    const msgKey = msg.serverId || msg.id;
     try {
       setActionLoading((prev) => ({ ...prev, [`note-${msgKey}`]: true }));
 
       const pageNum = extractPageFromText(msg.answer);
-      const title = msg.text.length > 50 ? `${msg.text.substring(0, 50)}...` : msg.text;
+      const rawTitle = (msg.text || 'Q&A Note').trim().replace(/^[#\*\s]+/, '');
+      const title = rawTitle.length > 55 ? `${rawTitle.substring(0, 55)}...` : rawTitle;
       const content = `### ❓ Question\n${msg.text}\n\n### 💡 Answer\n${msg.answer}`;
 
       const newNote = {
@@ -139,8 +140,13 @@ export default function DocumentChatTab({
       };
 
       const res = await addDocumentNote(documentId, newNote);
-      onUpdateNotes?.(res.data || []);
-      setSavedNotes((prev) => ({ ...prev, [msgKey]: true }));
+      const updatedNotes = res.data || [];
+      onUpdateNotes?.(updatedNotes);
+      setSavedNotes((prev) => ({
+        ...prev,
+        [msgKey]: true,
+        ...(msg.id ? { [msg.id]: true } : {}),
+      }));
     } catch (err) {
       console.error('Failed to save chat to notes:', err);
     } finally {
@@ -150,14 +156,15 @@ export default function DocumentChatTab({
 
   // 2. BOOKMARK CHAT ACTION (Bookmarks key insight with page link)
   const handleBookmarkChat = async (msg) => {
-    if (!documentId || !msg || savedBookmarks[msg.id]) return;
+    if (!documentId || !msg) return;
 
-    const msgKey = msg.id;
+    const msgKey = msg.serverId || msg.id;
     try {
       setActionLoading((prev) => ({ ...prev, [`bm-${msgKey}`]: true }));
 
       const pageNum = extractPageFromText(msg.answer);
-      const label = msg.text.length > 50 ? `${msg.text.substring(0, 50)}...` : msg.text;
+      const rawLabel = (msg.text || 'Insight').trim().replace(/^[#\*\s]+/, '');
+      const label = rawLabel.length > 55 ? `${rawLabel.substring(0, 55)}...` : rawLabel;
       const snippet = msg.answer ? `${msg.answer.substring(0, 130)}...` : `Insight on Page ${pageNum}`;
 
       const newBm = {
@@ -167,8 +174,13 @@ export default function DocumentChatTab({
       };
 
       const res = await addDocumentBookmark(documentId, newBm);
-      onUpdateBookmarks?.(res.data || []);
-      setSavedBookmarks((prev) => ({ ...prev, [msgKey]: true }));
+      const updatedBookmarks = res.data || [];
+      onUpdateBookmarks?.(updatedBookmarks);
+      setSavedBookmarks((prev) => ({
+        ...prev,
+        [msgKey]: true,
+        ...(msg.id ? { [msg.id]: true } : {}),
+      }));
     } catch (err) {
       console.error('Failed to bookmark chat insight:', err);
     } finally {
@@ -260,15 +272,11 @@ export default function DocumentChatTab({
         {messages.map((msg, index) => {
           const isNoteSaved =
             savedNotes[msg.id] ||
-            notes.some((n) => n.content && msg.text && n.content.includes(msg.text));
+            (msg.serverId && savedNotes[msg.serverId]) ||
+            notes.some((n) => n.content && msg.text && n.content.includes(`### ❓ Question\n${msg.text}`));
           const isBookmarked =
             savedBookmarks[msg.id] ||
-            bookmarks.some(
-              (b) =>
-                b.label &&
-                msg.text &&
-                (b.label.includes(msg.text.substring(0, 30)) || msg.text.includes(b.label))
-            );
+            (msg.serverId && savedBookmarks[msg.serverId]);
           const isNoteLoading = actionLoading[`note-${msg.id}`];
           const isBmLoading = actionLoading[`bm-${msg.id}`];
 

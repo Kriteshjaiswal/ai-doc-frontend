@@ -433,6 +433,7 @@ export default function DocumentOverview() {
               dates={analysis.dates || []}
               risks={analysis.risks || []}
               summary={document.summary || analysis.summary}
+              pageCount={pageCount}
               onSelectSectionPage={handleSelectPage}
               onTabChange={handleTabChange}
               onUpdateNotes={(updated) => setDocument((p) => ({ ...p, notes: updated }))}

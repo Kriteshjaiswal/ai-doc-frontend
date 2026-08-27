@@ -11,6 +11,7 @@ const DocumentOverview = lazy(() => import('./pages/DocumentOverview'));
 const Chat = lazy(() => import('./pages/Chat'));
 const ChatHistory = lazy(() => import('./pages/ChatHistory'));
 const Flashcards = lazy(() => import('./pages/Flashcards'));
+const Notes = lazy(() => import('./pages/Notes'));
 const Login = lazy(() => import('./pages/Login'));
 const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 
@@ -97,6 +98,7 @@ export default function App() {
                 <Route path="/documents/:documentId" element={<DocumentOverview />} />
                 <Route path="/documents/:documentId/:tab" element={<DocumentOverview />} />
                 <Route path="/flashcards" element={<Flashcards />} />
+                <Route path="/notes" element={<Notes />} />
                 <Route path="/chat" element={<Navigate to="/documents" replace />} />
                 <Route path="/history" element={<ChatHistory />} />
               </Route>
