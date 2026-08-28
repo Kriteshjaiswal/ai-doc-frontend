@@ -10,6 +10,10 @@ import {
   FiCpu,
   FiTarget,
   FiZap,
+  FiAlertCircle,
+  FiAlertTriangle,
+  FiInfo,
+  FiArrowRight,
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { getOAuthConfig } from '../api/authApi';
@@ -196,17 +200,52 @@ export default function Login() {
     setError('');
     setSocialMsg('');
     setForgotMsg('');
+
+    // Pre-flight client-side validation
+    const trimmedEmail = email.trim();
+    const trimmedFullName = fullName.trim();
+
+    if (isRegister && !trimmedFullName) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    if (!trimmedEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isRegister) {
-        await register(fullName, email, password);
+        await register(trimmedFullName, trimmedEmail.toLowerCase(), password);
       } else {
-        await login(email, password);
+        await login(trimmedEmail.toLowerCase(), password);
       }
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Authentication failed');
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        (isRegister ? 'Registration failed. Please try again.' : 'Login failed. Please try again.');
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -223,7 +262,7 @@ export default function Login() {
   };
 
   const handleForgotPassword = () => {
-    setForgotMsg('Password reset link sent if account exists.');
+    setForgotMsg('Password reset instructions sent to your registered email if it exists.');
     setSocialMsg('');
     setTimeout(() => setForgotMsg(''), 4000);
   };
@@ -386,26 +425,46 @@ export default function Login() {
                 <div className="min-h-0">
                   {error && (
                     <div
-                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12px] font-semibold"
+                      className="mb-4 px-3.5 py-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-[12.5px] font-medium flex items-start gap-2.5 shadow-sm animate-shake"
                       role="alert"
                     >
-                      {error}
+                      <FiAlertCircle className="text-rose-400 text-[16px] flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="leading-snug text-rose-300 font-semibold">{error}</p>
+                        {isRegister &&
+                          (error.toLowerCase().includes('already') ||
+                            error.toLowerCase().includes('registered') ||
+                            error.toLowerCase().includes('exists')) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsRegister(false);
+                                setError('');
+                              }}
+                              className="mt-2 text-[12px] font-bold text-cyan-400 hover:text-cyan-300 underline underline-offset-2 flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              Sign in with this email instead <FiArrowRight className="text-xs" />
+                            </button>
+                          )}
+                      </div>
                     </div>
                   )}
                   {socialMsg && (
                     <div
-                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[12px] font-semibold leading-relaxed"
+                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[12px] font-semibold leading-relaxed flex items-start gap-2.5"
                       role="status"
                     >
-                      {socialMsg}
+                      <FiInfo className="text-indigo-400 text-[15px] flex-shrink-0 mt-0.5" />
+                      <span className="flex-1">{socialMsg}</span>
                     </div>
                   )}
                   {forgotMsg && (
                     <div
-                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[12px] font-semibold"
+                      className="mb-4 px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[12px] font-semibold flex items-start gap-2.5"
                       role="status"
                     >
-                      {forgotMsg}
+                      <FiAlertTriangle className="text-amber-400 text-[15px] flex-shrink-0 mt-0.5" />
+                      <span className="flex-1">{forgotMsg}</span>
                     </div>
                   )}
                 </div>

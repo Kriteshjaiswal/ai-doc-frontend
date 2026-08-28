@@ -27,6 +27,7 @@ import {
 } from '../api/documentApi';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import { ListSkeleton } from '../components/LoadingSkeleton';
+import StatusMessage from '../components/StatusMessage';
 
 export default function Notes() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,6 +38,7 @@ export default function Notes() {
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [questionSearch, setQuestionSearch] = useState('');
+  const [statusMsg, setStatusMsg] = useState({ type: null, message: null });
 
   // Accordion Expanded State: Set of open note IDs
   const [expandedNoteIds, setExpandedNoteIds] = useState(new Set());
@@ -165,7 +167,10 @@ export default function Notes() {
 
   const handleSaveNote = async (e) => {
     e.preventDefault();
-    if (!noteTitle.trim() || !noteContent.trim() || !selectedDocId) return;
+    if (!noteTitle.trim() || !noteContent.trim() || !selectedDocId) {
+      setStatusMsg({ type: 'warning', message: 'Please provide both note title and content.' });
+      return;
+    }
 
     try {
       setSavingNote(true);
@@ -194,8 +199,16 @@ export default function Notes() {
       );
 
       setShowModal(false);
+      setStatusMsg({
+        type: 'success',
+        message: editingNoteId ? 'Note updated successfully!' : 'New note added successfully!',
+      });
     } catch (err) {
       console.error('Failed to save note:', err);
+      setStatusMsg({
+        type: 'error',
+        message: err.response?.data?.message || err.message || 'Failed to save note.',
+      });
     } finally {
       setSavingNote(false);
     }
@@ -215,8 +228,13 @@ export default function Notes() {
             : d
         )
       );
+      setStatusMsg({ type: 'success', message: 'Note deleted successfully.' });
     } catch (err) {
       console.error('Failed to delete note:', err);
+      setStatusMsg({
+        type: 'error',
+        message: err.response?.data?.message || err.message || 'Failed to delete note.',
+      });
     }
   };
 
@@ -224,6 +242,7 @@ export default function Notes() {
     const text = `# ${note.title}\n\n${note.content}`;
     navigator.clipboard.writeText(text);
     setCopiedId(note.id);
+    setStatusMsg({ type: 'info', message: 'Note copied to clipboard.' });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -270,6 +289,11 @@ export default function Notes() {
 
   return (
     <div className="space-y-6 pb-12">
+      <StatusMessage
+        type={statusMsg.type}
+        message={statusMsg.message}
+        onClose={() => setStatusMsg({ type: null, message: null })}
+      />
       {/* ────────────────────────────────────────────────────────────
           VIEW 1: ONLY SHOW PDF NAMES (Initial Grid View)
           ──────────────────────────────────────────────────────────── */}

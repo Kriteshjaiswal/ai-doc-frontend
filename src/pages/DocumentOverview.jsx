@@ -147,7 +147,7 @@ export default function DocumentOverview() {
       }));
       setStatusMsg({ type: 'success', message: 'Document renamed successfully' });
     } catch (err) {
-      setStatusMsg({ type: 'error', message: err.message || 'Failed to rename document' });
+      setStatusMsg({ type: 'error', message: err.response?.data?.message || err.message || 'Failed to rename document' });
     }
   };
 
@@ -166,7 +166,7 @@ export default function DocumentOverview() {
         setStatusMsg({ type: 'success', message: 'Document re-analyzed successfully' });
       }
     } catch (err) {
-      setStatusMsg({ type: 'error', message: err.message || 'Re-analysis failed' });
+      setStatusMsg({ type: 'error', message: err.response?.data?.message || err.message || 'Re-analysis failed' });
     } finally {
       setReanalyzing(false);
     }
@@ -189,7 +189,7 @@ export default function DocumentOverview() {
       await deleteDocument(documentId);
       navigate('/documents', { replace: true });
     } catch (err) {
-      setStatusMsg({ type: 'error', message: err.message || 'Failed to delete document' });
+      setStatusMsg({ type: 'error', message: err.response?.data?.message || err.message || 'Failed to delete document' });
     } finally {
       setShowDeleteModal(false);
     }
@@ -209,7 +209,7 @@ export default function DocumentOverview() {
         setQuickActionResult(res.data);
       }
     } catch (err) {
-      setStatusMsg({ type: 'error', message: err.message || 'Quick action failed' });
+      setStatusMsg({ type: 'error', message: err.response?.data?.message || err.message || 'Quick action failed' });
     } finally {
       setLoadingAction(null);
     }
@@ -233,7 +233,7 @@ export default function DocumentOverview() {
     } catch (err) {
       setStatusMsg({
         type: 'error',
-        message: err.message || `Failed to translate into ${targetLanguage}`,
+        message: err.response?.data?.message || err.message || `Failed to translate into ${targetLanguage}`,
       });
     } finally {
       setLoadingAction(null);

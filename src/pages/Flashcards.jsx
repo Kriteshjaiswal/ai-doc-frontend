@@ -37,6 +37,7 @@ import {
   FiSliders,
 } from 'react-icons/fi';
 import CustomDropdown from '../components/CustomDropdown';
+import StatusMessage from '../components/StatusMessage';
 
 export default function Flashcards() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ export default function Flashcards() {
   const [documents, setDocuments] = useState([]);
   const [deck, setDeck] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusMsg, setStatusMsg] = useState({ type: null, message: null });
 
   // Filters State
   const [selectedDocId, setSelectedDocId] = useState('ALL');
@@ -283,7 +285,7 @@ export default function Flashcards() {
     setSelectedDifficulty('All');
     const mistakeCards = deck.filter((c) => c.status === 'need_revision');
     if (mistakeCards.length === 0) {
-      alert('No cards currently marked as "Need Revision"!');
+      setStatusMsg({ type: 'info', message: 'No flashcards currently marked as "Need Revision". Great job!' });
       return;
     }
     setCurrentIndex(0);
@@ -304,9 +306,10 @@ export default function Flashcards() {
       setDeck(updatedList);
       setCurrentIndex(0);
       setIsFlipped(false);
+      setStatusMsg({ type: 'success', message: `Generated ${newCards.length || countToUse} AI flashcards successfully!` });
     } catch (err) {
       console.error('Failed to generate flashcards from backend:', err);
-      alert(err.response?.data?.message || 'Failed to generate flashcards from backend document text.');
+      setStatusMsg({ type: 'error', message: err.response?.data?.message || err.message || 'Failed to generate flashcards from document text.' });
     } finally {
       setIsGenerating(false);
     }
@@ -347,6 +350,11 @@ export default function Flashcards() {
 
   return (
     <div className="space-y-8 pb-12">
+      <StatusMessage
+        type={statusMsg.type}
+        message={statusMsg.message}
+        onClose={() => setStatusMsg({ type: null, message: null })}
+      />
       {/* -------------------------------------------------------------
          Header & Top Action Button
       ------------------------------------------------------------- */}

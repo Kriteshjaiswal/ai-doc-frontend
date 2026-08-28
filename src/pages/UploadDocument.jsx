@@ -34,24 +34,49 @@ export default function UploadDocument() {
     e.stopPropagation();
     setDragActive(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type === 'application/pdf') {
+    if (droppedFile) {
+      if (!droppedFile.name.toLowerCase().endsWith('.pdf') && droppedFile.type !== 'application/pdf') {
+        setStatus({ type: 'warning', message: 'Only PDF documents (.pdf) are accepted.' });
+        return;
+      }
+      if (droppedFile.size > 50 * 1024 * 1024) {
+        setStatus({ type: 'warning', message: 'File size exceeds the 50 MB limit. Please choose a smaller file.' });
+        return;
+      }
+      if (droppedFile.size === 0) {
+        setStatus({ type: 'warning', message: 'The selected file is empty. Please choose a valid PDF document.' });
+        return;
+      }
       setFile(droppedFile);
       setStatus({ type: null, message: null });
-    } else {
-      setStatus({ type: 'error', message: 'Only PDF files are accepted' });
     }
   };
 
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      if (!selectedFile.name.toLowerCase().endsWith('.pdf') && selectedFile.type !== 'application/pdf') {
+        setStatus({ type: 'warning', message: 'Only PDF documents (.pdf) are accepted.' });
+        return;
+      }
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        setStatus({ type: 'warning', message: 'File size exceeds the 50 MB limit. Please choose a smaller file.' });
+        return;
+      }
+      if (selectedFile.size === 0) {
+        setStatus({ type: 'warning', message: 'The selected file is empty. Please choose a valid PDF document.' });
+        return;
+      }
       setFile(selectedFile);
       setStatus({ type: null, message: null });
     }
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      setStatus({ type: 'warning', message: 'Please select a PDF document first.' });
+      return;
+    }
 
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
@@ -95,7 +120,7 @@ export default function UploadDocument() {
         clearInterval(progressIntervalRef.current);
         progressIntervalRef.current = null;
       }
-      setStatus({ type: 'error', message: err.message || 'Upload failed' });
+      setStatus({ type: 'error', message: err.response?.data?.message || err.message || 'Failed to upload document. Please try again.' });
       setProgress(0);
     } finally {
       setUploading(false);
