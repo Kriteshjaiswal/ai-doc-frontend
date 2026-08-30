@@ -313,11 +313,10 @@ export default function DocumentChatTab({
                         <button
                           onClick={() => handleSaveToNote(msg)}
                           disabled={isNoteSaved || isNoteLoading}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                            isNoteSaved
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isNoteSaved
                               ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-900/40'
                               : 'text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50/70 dark:hover:bg-orange-950/40'
-                          }`}
+                            }`}
                           title="Save this question & answer to Document Notes"
                         >
                           {isNoteSaved ? (
@@ -337,19 +336,17 @@ export default function DocumentChatTab({
                         <button
                           onClick={() => handleBookmarkChat(msg)}
                           disabled={isBookmarked || isBmLoading}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                            isBookmarked
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isBookmarked
                               ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200/40 dark:border-violet-900/40'
                               : 'text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50/70 dark:hover:bg-violet-950/40'
-                          }`}
+                            }`}
                           title="Bookmark this insight with page reference"
                         >
                           <FiBookmark
-                            className={`text-xs ${
-                              isBookmarked
+                            className={`text-xs ${isBookmarked
                                 ? 'text-violet-600 dark:text-violet-400 fill-violet-600 dark:fill-violet-400'
                                 : 'text-violet-500'
-                            }`}
+                              }`}
                           />
                           <span>{isBookmarked ? 'Bookmarked' : isBmLoading ? 'Saving...' : 'Bookmark'}</span>
                         </button>

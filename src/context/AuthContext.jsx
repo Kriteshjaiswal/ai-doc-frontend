@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { loginUser, registerUser } from '../api/authApi';
+import {
+  loginUser,
+  registerUser,
+  verifyOtp,
+  verifyMagicLink,
+  resendOtp,
+  setLocalPassword,
+  logoutUser,
+} from '../api/authApi';
+import { getCurrentUserProfile } from '../api/userApi';
+import { useIdleTimer } from '../hooks/useIdleTimer';
+import SessionWarningModal from '../components/auth/SessionWarningModal';
 
 const AuthContext = createContext();
 
@@ -24,36 +35,104 @@ export function AuthProvider({ children }) {
     setUser(userValue);
   };
 
-  const login = useCallback(async (email, password) => {
-    const res = await loginUser(email, password);
-    const { token: jwt, fullName, email: userEmail } = res.data;
-    persistAuth(jwt, { fullName, email: userEmail });
-    return res;
+  const logout = useCallback(async () => {
+    try {
+      await logoutUser();
+    } catch (e) {
+      console.warn('Logout API call failed:', e.getMessage);
+    } finally {
+      localStorage.removeItem('aidoc_token');
+      localStorage.removeItem('aidoc_user');
+      setToken(null);
+      setUser(null);
+    }
   }, []);
 
-  const loginWithToken = useCallback((jwtToken, fullName, userEmail) => {
-    persistAuth(jwtToken, { fullName, email: userEmail });
+  // 10-Minute Inactivity Auto-Logout Hook
+  const { showWarning, remainingSeconds, extendSession } = useIdleTimer({
+    enabled: !!token,
+    onTimeout: () => {
+      logout();
+      window.location.href = '/login?reason=inactivity';
+    },
+  });
+
+  const login = useCallback(async (email, password) => {
+    const res = await loginUser(email, password);
+    if (res.data?.requiresOtpVerification) {
+      return res.data;
+    }
+    const { token: sessionToken, sessionId, user: userData } = res.data;
+    const activeToken = sessionToken || sessionId;
+    persistAuth(activeToken, userData);
+    return res.data;
   }, []);
 
   const register = useCallback(async (fullName, email, password) => {
     const res = await registerUser(fullName, email, password);
-    const { token: jwt, fullName: name, email: userEmail } = res.data;
-    persistAuth(jwt, { fullName: name, email: userEmail });
-    return res;
+    return res.data;
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('aidoc_token');
-    localStorage.removeItem('aidoc_user');
-    setToken(null);
-    setUser(null);
+  const verifyOtpCode = useCallback(async (email, otpCode) => {
+    const res = await verifyOtp(email, otpCode);
+    const { token: sessionToken, sessionId, user: userData } = res.data;
+    const activeToken = sessionToken || sessionId;
+    persistAuth(activeToken, userData);
+    return res.data;
   }, []);
+
+  const verifyMagicToken = useCallback(async (tokenString) => {
+    const res = await verifyMagicLink(tokenString);
+    const { token: sessionToken, sessionId, user: userData } = res.data;
+    const activeToken = sessionToken || sessionId;
+    persistAuth(activeToken, userData);
+    return res.data;
+  }, []);
+
+  const loginWithToken = useCallback((activeToken, userData) => {
+    persistAuth(activeToken, userData);
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await getCurrentUserProfile();
+      if (res.data) {
+        setUser(res.data);
+        localStorage.setItem('aidoc_user', JSON.stringify(res.data));
+      }
+    } catch (e) {
+      console.warn('Failed to refresh user profile:', e.message);
+    }
+  }, [token]);
 
   const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAuthenticated, login, loginWithToken, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        isAuthenticated,
+        login,
+        register,
+        verifyOtpCode,
+        verifyMagicToken,
+        loginWithToken,
+        refreshProfile,
+        logout,
+      }}
+    >
       {children}
+
+      {/* 10-Minute Inactivity Warning Modal */}
+      <SessionWarningModal
+        isOpen={showWarning}
+        remainingSeconds={remainingSeconds}
+        onExtend={extendSession}
+        onLogout={logout}
+      />
     </AuthContext.Provider>
   );
 }

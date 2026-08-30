@@ -3,10 +3,14 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import SearchCommand from './SearchCommand';
+import UserDetailDrawer from './user/UserDetailDrawer';
+import { useAuth } from '../context/AuthContext';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
+  const { user, refreshProfile } = useAuth();
 
   // Global Cmd+K / Ctrl+K keyboard shortcut
   useEffect(() => {
@@ -22,12 +26,17 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] dark:bg-[#0B0F17] text-slate-800 dark:text-slate-100 transition-colors duration-200 overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpenProfile={() => setProfileDrawerOpen(true)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:pl-[72px]">
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
+          onOpenProfile={() => setProfileDrawerOpen(true)}
         />
         <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8">
           <div className="max-w-[1600px] w-full mx-auto space-y-6">
@@ -37,6 +46,15 @@ export default function Layout() {
       </div>
 
       <SearchCommand isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Global Profile & Account Details Drawer */}
+      <UserDetailDrawer
+        userId={user?.id}
+        currentUserId={user?.id}
+        isOpen={profileDrawerOpen}
+        onClose={() => setProfileDrawerOpen(false)}
+        onUserUpdated={refreshProfile}
+      />
     </div>
   );
 }

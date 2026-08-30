@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import {
   FiMenu,
   FiSun,
@@ -14,7 +14,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ onMenuClick, onOpenSearch }) {
+export default function Navbar({ onMenuClick, onOpenSearch, onOpenProfile }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -36,10 +36,14 @@ export default function Navbar({ onMenuClick, onOpenSearch }) {
     switch (path) {
       case '/':
         return 'Dashboard';
+      case '/profile':
+        return 'My Profile';
       case '/upload':
         return 'Upload';
       case '/documents':
         return 'Documents';
+      case '/users':
+        return 'Users Directory';
       case '/flashcards':
         return 'Flashcards';
       case '/comparisons':
@@ -146,15 +150,19 @@ export default function Navbar({ onMenuClick, onOpenSearch }) {
             {isDark ? <FiSun className="text-base text-amber-400" /> : <FiMoon className="text-base text-indigo-600" />}
           </button>
 
-          {/* User Badge (Visible on sm+) */}
-          <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200/80 dark:border-[#1E293B]">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-xs shadow-xs">
+          {/* User Badge Button (Links to /profile page) */}
+          <Link
+            to="/profile"
+            className="flex items-center gap-2 pl-2 border-l border-slate-200/80 dark:border-[#1E293B] hover:opacity-90 transition-all cursor-pointer group"
+            title="Click to view My Profile & Security"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
               {getInitials(user?.fullName)}
             </div>
-            <span className="hidden lg:inline text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[130px] truncate">
+            <span className="hidden lg:inline text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[130px] truncate group-hover:text-cyan-400 transition-colors">
               {user?.fullName || 'Kritesh Jaiswal'}
             </span>
-          </div>
+          </Link>
 
           {/* Logout Button (Opens Confirmation Modal) */}
           <button

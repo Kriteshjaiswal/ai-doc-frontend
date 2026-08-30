@@ -1,18 +1,20 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  withCredentials: true,
   headers: {
     'Accept': 'application/json',
   },
 });
 
-// Request interceptor — automatically attach JWT token
+// Request interceptor — automatically attach session/JWT token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('aidoc_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      config.headers['X-Session-Token'] = token;
     }
     return config;
   },
@@ -28,6 +30,9 @@ api.interceptors.response.use(
     const isAuthEndpoint =
       url.includes('/auth/login') ||
       url.includes('/auth/register') ||
+      url.includes('/auth/verify-otp') ||
+      url.includes('/auth/verify-link') ||
+      url.includes('/auth/resend-otp') ||
       url.includes('/auth/oauth');
 
     // Only redirect to login on 401/403 for PROTECTED endpoints, not during login/register!
@@ -35,7 +40,7 @@ api.interceptors.response.use(
       localStorage.removeItem('aidoc_token');
       localStorage.removeItem('aidoc_user');
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        window.location.href = '/login?reason=session_expired';
       }
     }
 
@@ -49,7 +54,7 @@ api.interceptors.response.use(
       if (status === 400) {
         message = 'Invalid request. Please check your inputs.';
       } else if (status === 401) {
-        message = 'Invalid email or password. Please verify your credentials.';
+        message = 'Invalid email, password, or your session has expired.';
       } else if (status === 403) {
         message = 'You do not have permission to perform this action.';
       } else if (status === 404) {

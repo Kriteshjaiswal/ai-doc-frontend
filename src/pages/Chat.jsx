@@ -587,10 +587,10 @@ export default function Chat() {
 
       {/* Strict Fixed-Height Grid Layout (Both Panels Fixed to 78vh / exactly identical height) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 h-[calc(100vh-8rem)] sm:h-[calc(100vh-9rem)] lg:h-[calc(100vh-9.5rem)] max-h-[calc(100vh-9.5rem)] min-h-0 overflow-hidden">
-        
+
         {/* Left Main Chat Box - Never expands, only inner messages scroll */}
         <div className="lg:col-span-2 flex flex-col h-full max-h-full glass-card rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm bg-white dark:bg-[#0E1424]">
-          
+
           {/* 1. Header (Fixed 56px height) */}
           <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/90 dark:bg-[#101626] flex items-center justify-between gap-3 flex-wrap flex-shrink-0">
             {/* Left: Direct AI Chat Title & Status */}
@@ -678,11 +678,10 @@ export default function Chat() {
                 {/* AI response bubble (High-Contrast Dark Glass Theme) */}
                 <div className="flex justify-start">
                   <div
-                    className={`max-w-[92%] sm:max-w-[85%] p-4 sm:p-5 rounded-3xl rounded-tl-xs border space-y-3 shadow-md ${
-                      pair.error
+                    className={`max-w-[92%] sm:max-w-[85%] p-4 sm:p-5 rounded-3xl rounded-tl-xs border space-y-3 shadow-md ${pair.error
                         ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300'
                         : 'bg-slate-100 dark:bg-[#131A2D] border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 shadow-slate-200/50 dark:shadow-2xl'
-                    }`}
+                      }`}
                   >
                     <FormattedMarkdownText content={pair.answer} />
 
@@ -700,11 +699,10 @@ export default function Chat() {
                           <button
                             onClick={() => handleSaveToNote(pair)}
                             disabled={savedNotes[pair.id] || savingNoteId === pair.id}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                              savedNotes[pair.id]
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${savedNotes[pair.id]
                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-900/40'
                                 : 'text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50/70 dark:hover:bg-orange-950/40'
-                            }`}
+                              }`}
                             title="Save this to Document Notes"
                           >
                             {savedNotes[pair.id] ? (
@@ -799,7 +797,7 @@ export default function Chat() {
 
         {/* Right Side Context Panel (Fixed Height Matching Left Box, Scrollable Content) */}
         <div className="hidden lg:flex flex-col h-full max-h-full glass-card p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-[#0E1424]">
-          
+
           {/* Header (Pinned) */}
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
             <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold">

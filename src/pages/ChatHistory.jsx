@@ -17,34 +17,6 @@ import DeleteModal from '../components/DeleteModal';
 import StatusMessage from '../components/StatusMessage';
 import CustomDropdown from '../components/CustomDropdown';
 
-// Fallback history matching reference screenshots if backend is empty
-const defaultHistory = [
-  {
-    id: 201,
-    docName: 'Analytics_Architecture_Spec.pdf',
-    question: 'Summarise the ingestion pipeline in the architecture spec.',
-    answer:
-      'Events are published to a durable queue, validated and enriched in a streaming worker, then batch-loaded into warehouse tables partitioned by event_date.',
-    askedAt: '2026-08-04T10:00:00Z',
-  },
-  {
-    id: 202,
-    docName: 'Vendor_Agreement_2028.pdf',
-    question: 'Summarise the key risks in the vendor agreement.',
-    answer:
-      'Key risks include SLA breach penalties, data transfer restrictions to non-EU jurisdictions, and indemnification caps limited to 12 months fees.',
-    askedAt: '2026-07-21T14:30:00Z',
-  },
-  {
-    id: 203,
-    docName: 'Q3_Investor_Update.pdf',
-    question: 'What was the YoY growth rate in Q3?',
-    answer:
-      'Revenue grew 34% YoY with gross margins reaching 72% driven by enterprise expansion.',
-    askedAt: '2026-07-29T09:15:00Z',
-  },
-];
-
 export default function ChatHistory() {
   const [documents, setDocuments] = useState([]);
   const [selectedDocId, setSelectedDocId] = useState('');
@@ -85,13 +57,13 @@ export default function ChatHistory() {
           }));
           setHistory(items);
         } else {
-          setHistory(defaultHistory);
+          setHistory([]);
         }
       })
       .catch((err) => {
         if (isCancelled) return;
-        console.error(err);
-        setHistory(defaultHistory);
+        console.error('Error fetching chat history:', err);
+        setHistory([]);
       })
       .finally(() => {
         if (!isCancelled) setLoading(false);

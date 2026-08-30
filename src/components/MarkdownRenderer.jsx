@@ -1,5 +1,5 @@
-import React from 'react';
-import { FiFileText } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiFileText, FiCopy, FiCheck } from 'react-icons/fi';
 
 /**
  * Prettifies raw JSON keys (e.g. key_objectives -> 🎯 Key Objectives)
@@ -45,7 +45,6 @@ function convertJsonNodeToMarkdown(data, depth = 0) {
       return data
         .map((item) => {
           const str = String(item || '').trim();
-          // If bullet format "Heading: Body" -> bold the heading part
           const colonIdx = str.indexOf(':');
           if (colonIdx > 2 && colonIdx < 50) {
             const head = str.substring(0, colonIdx).trim();
@@ -57,15 +56,13 @@ function convertJsonNodeToMarkdown(data, depth = 0) {
         .join('\n');
     }
 
-    // Array of objects (e.g. flashcards, metrics, items)
+    // Array of objects
     return data
       .map((item, idx) => {
         if (typeof item === 'object' && item !== null) {
-          // If flashcard style { question, answer }
           if (item.question && item.answer) {
             return `### 📇 Flashcard ${idx + 1}\n**Q:** ${item.question}\n\n**A:** ${item.answer}\n`;
           }
-          // If title/name based item
           if (item.title || item.name || item.task) {
             const header = item.title || item.name || item.task;
             const restKeys = Object.keys(item).filter((k) => !['title', 'name', 'task'].includes(k));
@@ -74,7 +71,6 @@ function convertJsonNodeToMarkdown(data, depth = 0) {
               .join('\n');
             return `- **${header}**\n${subLines}`;
           }
-          // Generic key-value object in array
           const pairs = Object.entries(item)
             .map(([k, v]) => `  - **${prettifyKey(k).replace(/^[^a-zA-Z0-9]+/, '')}:** ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
             .join('\n');
@@ -90,8 +86,6 @@ function convertJsonNodeToMarkdown(data, depth = 0) {
     if (keys.length === 0) return '';
 
     const lines = [];
-
-    // If there is a title property, render as top heading
     if (data.title) {
       lines.push(`## ${data.title}\n`);
     }
@@ -133,14 +127,12 @@ export function formatJsonToMarkdown(text) {
 
   const trimmed = String(text).trim();
 
-  // Strip possible surrounding markdown codeblocks like ```json ... ```
   let unquoted = trimmed;
   if (unquoted.startsWith('```json')) unquoted = unquoted.substring(7);
   else if (unquoted.startsWith('```')) unquoted = unquoted.substring(3);
   if (unquoted.endsWith('```')) unquoted = unquoted.substring(0, unquoted.length - 3);
   unquoted = unquoted.trim();
 
-  // Test if it's a JSON object or array
   if ((unquoted.startsWith('{') && unquoted.endsWith('}')) || (unquoted.startsWith('[') && unquoted.endsWith(']'))) {
     try {
       const parsed = JSON.parse(unquoted);
@@ -153,16 +145,85 @@ export function formatJsonToMarkdown(text) {
   return text;
 }
 
+/**
+ * Dedicated Code Block with Language Badge & Copy to Clipboard
+ */
+export function CodeBlock({ language, code }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-3.5 rounded-2xl overflow-hidden border border-slate-700/80 bg-[#0B0F19] text-slate-200 text-xs shadow-xl font-mono">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#141B2D] border-b border-slate-700/60 text-[11px] text-slate-400 select-none">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+          <span className="uppercase font-bold tracking-wider text-indigo-400 ml-1.5">
+            {language || 'code'}
+          </span>
+        </div>
+        <button
+          onClick={handleCopy}
+          type="button"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer text-[11px] font-semibold"
+          title="Copy to clipboard"
+        >
+          {copied ? <FiCheck className="text-emerald-400" /> : <FiCopy />}
+          <span>{copied ? 'Copied!' : 'Copy'}</span>
+        </button>
+      </div>
+      <pre className="p-4 overflow-x-auto text-[12px] leading-relaxed text-slate-200 selection:bg-indigo-500/30">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
 export default function MarkdownRenderer({ content, onSelectPage }) {
   if (!content) return null;
 
-  // Automatically convert raw JSON into human-readable Markdown
-  const normalizedContent = formatJsonToMarkdown(content);
+  // Pre-process multiline code blocks first
+  const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+  const sections = [];
+  let lastIndex = 0;
+  let match;
 
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      sections.push({ type: 'markdown', text: content.slice(lastIndex, match.index) });
+    }
+    sections.push({ type: 'code', language: match[1], code: match[2].trim() });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    sections.push({ type: 'markdown', text: content.slice(lastIndex) });
+  }
+
+  return (
+    <div className="space-y-3 leading-relaxed text-slate-800 dark:text-slate-200">
+      {sections.map((section, sIdx) => {
+        if (section.type === 'code') {
+          return <CodeBlock key={`code-${sIdx}`} language={section.language} code={section.code} />;
+        }
+        return <MarkdownTextSection key={`md-${sIdx}`} content={section.text} onSelectPage={onSelectPage} />;
+      })}
+    </div>
+  );
+}
+
+function MarkdownTextSection({ content, onSelectPage }) {
+  const normalizedContent = formatJsonToMarkdown(content);
   const lines = normalizedContent.split('\n');
   const elements = [];
   let currentList = [];
-  let currentListType = null; // 'ul' or 'ol'
+  let currentListType = null;
   let inTable = false;
   let tableRows = [];
   let currentBlockquote = [];
@@ -267,7 +328,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
     const rawLine = lines[i];
     const line = rawLine.trim();
 
-    // Empty line
     if (!line) {
       flushList();
       flushTable();
@@ -275,7 +335,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       continue;
     }
 
-    // Horizontal Rule `---` or `***`
     if (line === '---' || line === '***' || line === '___') {
       flushList();
       flushTable();
@@ -286,7 +345,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       continue;
     }
 
-    // Blockquote `> quote`
     if (line.startsWith('>')) {
       flushList();
       flushTable();
@@ -297,7 +355,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       flushBlockquote();
     }
 
-    // Table syntax `| a | b |`
     if (line.startsWith('|') && line.endsWith('|')) {
       flushList();
       inTable = true;
@@ -311,7 +368,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       flushTable();
     }
 
-    // Headers `### Header` or `## Header` or `# Header`
     const headerMatch = line.match(/^(#{1,4})\s+(.+)$/);
     if (headerMatch) {
       flushList();
@@ -336,7 +392,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       continue;
     }
 
-    // Ordered List `1. Item` or `1) Item`
     const olMatch = line.match(/^(\d+)[\.\)]\s+(.+)$/);
     if (olMatch) {
       if (currentListType && currentListType !== 'ol') flushList();
@@ -345,7 +400,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       continue;
     }
 
-    // Unordered List `- Item` or `* Item`
     const ulMatch = line.match(/^[-*•]\s+(.+)$/);
     if (ulMatch) {
       if (currentListType && currentListType !== 'ul') flushList();
@@ -354,7 +408,6 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
       continue;
     }
 
-    // Regular Paragraph
     flushList();
     flushTable();
 
@@ -381,20 +434,12 @@ export default function MarkdownRenderer({ content, onSelectPage }) {
 function renderInlineFormatting(text, onSelectPage) {
   if (!text) return null;
 
-  // Comprehensive Regex matching:
-  // 1. Backticked citations: `[Page 1-8]` or `[📄 Page 1-8]`
-  // 2. Bracketed / Parenthesized page citations: [Page 1], [Pages 1-8], [📄 Page 1-8], (Page 1-8)
-  // 3. Bold text: **text**
-  // 4. Code: `code`
-  // 5. Italic: *text*
   const tokenRegex = /(`?\[?📄?\s*(?:Pages?|p\.)\s*\d+(?:\s*[-–,]\s*\d+)*\]?`?|\*\*.*?\*\*|`.*?`|\*.*?\*)/gi;
-
   const parts = text.split(tokenRegex);
 
   return parts.map((part, idx) => {
     if (!part) return null;
 
-    // 1. Check if the token is a Page Citation
     const citationMatch = part.match(/(?:Pages?|p\.)\s*(\d+)(?:\s*[-–]\s*(\d+))?/i);
     if (citationMatch && (part.toLowerCase().includes('page') || part.toLowerCase().includes('p.'))) {
       const startPage = parseInt(citationMatch[1], 10);
@@ -415,7 +460,6 @@ function renderInlineFormatting(text, onSelectPage) {
       );
     }
 
-    // 2. Bold tags `**content**`
     if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
       const inner = part.slice(2, -2);
       return (
@@ -425,7 +469,6 @@ function renderInlineFormatting(text, onSelectPage) {
       );
     }
 
-    // 3. Inline Code `` `content` ``
     if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
       const code = part.slice(1, -1);
       return (
@@ -438,7 +481,6 @@ function renderInlineFormatting(text, onSelectPage) {
       );
     }
 
-    // 4. Italic tags `*content*`
     if (part.startsWith('*') && part.endsWith('*') && part.length >= 2 && !part.startsWith('**')) {
       const inner = part.slice(1, -1);
       return (
